@@ -1,0 +1,11 @@
+runtimer
+
+Time the runs of a 16 core NIA using various page replacement algorithms.
+
+Initially build for OPT.
+
+Copyright Adrian McMenamin, 2014
+acm538@york.ac.uk
+
+Reuse licensed under version 2 of the GNU GPL, or any later version at your
+discretion.
