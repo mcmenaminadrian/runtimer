@@ -14,6 +14,12 @@ void usage()
 	printf "USAGE:runtimer controlfile prefix\n"
 }
 
+static void XMLCALL
+	starthandler(void *data, const XML_Char *name, const XML_Char **attr)
+{
+
+}
+
 void main(int argc, char* argv[])
 {
 	FILE* inXML;
