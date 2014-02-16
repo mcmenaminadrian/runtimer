@@ -17,7 +17,8 @@ struct threadRecord
 	struct threadRecord *next;
 };
 
-static struct threadRecord *startTR = NULL; 
+static struct threadRecord *startTR = NULL;
+static char outputprefix[BUFFSZ]; 
 
 void mapThread(struct threadRecord *root, int tNum, char* fileName)
 {
@@ -25,17 +26,17 @@ void mapThread(struct threadRecord *root, int tNum, char* fileName)
 		struct threadRecord *newThread =
 			(struct threadRecord*)
 				malloc( sizeof (struct threadRecord));
-		threadRecord->number = tNum;
-		strcpy(threadRecord->path, fileName);
-		threadRecord->next = NULL;
-		root = threadRecord;
+		newThread->number = tNum;
+		strcpy(newThread->path, fileName);
+		newThread->next = NULL;
+		root = newThread;
 	} else 
 		mapThread(root->next, tNum, fileName);
 }
 
 void usage()
 {
-	printf "USAGE:runtimer controlfile prefix\n"
+	printf("USAGE:runtimer controlfile prefix\n");
 }
 
 static void XMLCALL
@@ -53,7 +54,7 @@ static void XMLCALL
 		}
 		for (i = 0; attr[i]; i += 2) {
 			if (strcmp(attr[i], "path") == 0) {
-				strcpy(threadPath, attr[i + 1];
+				strcpy(threadPath, attr[i + 1]);
 				break;
 			}
 		}
@@ -62,7 +63,7 @@ static void XMLCALL
 	}
 }
 
-void main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 	FILE* inXML;
 	char data[BUFFSZ]; 
