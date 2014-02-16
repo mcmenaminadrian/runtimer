@@ -9,6 +9,30 @@
 #define CORES 16
 #define COREMEM 32
 
+
+struct threadRecord
+{
+	int number;
+	char path[BUFFSZ];
+	struct threadRecord *next;
+};
+
+static struct threadRecord *startTR = NULL; 
+
+void mapThread(struct threadRecord *root, int tNum, char* fileName)
+{
+	if (root == NULL) {
+		struct threadRecord *newThread =
+			(struct threadRecord*)
+				malloc( sizeof (struct threadRecord));
+		threadRecord->number = tNum;
+		strcpy(threadRecord->path, fileName);
+		threadRecord->next = NULL;
+		root = threadRecord;
+	} else 
+		mapThread(root->next, tNum, fileName);
+}
+
 void usage()
 {
 	printf "USAGE:runtimer controlfile prefix\n"
@@ -17,7 +41,25 @@ void usage()
 static void XMLCALL
 	starthandler(void *data, const XML_Char *name, const XML_Char **attr)
 {
-
+	int i;
+	int threadID;
+	char threadPath[BUFFSZ];
+	if (strcmp(name, "file") == 0) {
+		for (i = 0; attr[i]; i += 2) {
+			if (strcmp(attr[i], "thread") == 0) {
+				threadID = atoi(attr[i + 1]);
+				break;
+			}
+		}
+		for (i = 0; attr[i]; i += 2) {
+			if (strcmp(attr[i], "path") == 0) {
+				strcpy(threadPath, attr[i + 1];
+				break;
+			}
+		}
+		mapThread(startTR, threadID, threadPath);
+		printf("Mapped thread %i at %s\n", threadID, threadPath);
+	}
 }
 
 void main(int argc, char* argv[])
