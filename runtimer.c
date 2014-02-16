@@ -34,9 +34,18 @@ void mapThread(struct threadRecord *root, int tNum, char* fileName)
 		mapThread(root->next, tNum, fileName);
 }
 
+void cleanThreadList(struct threadRecord *root)
+{
+	if (root == NULL)
+		return;
+	struct threadRecordList *nextOne = root->next;
+	free(root);
+	cleanThreadList(nextOne);
+}
+
 void usage()
 {
-	printf("USAGE:runtimer controlfile prefix\n");
+	printf("USAGE: runtimer controlfile prefix\n");
 }
 
 static void XMLCALL
@@ -59,8 +68,9 @@ static void XMLCALL
 			}
 		}
 		mapThread(startTR, threadID, threadPath);
-		printf("Mapped thread %i at %s\n", threadID, threadPath);
 	}
+	//start the first thread
+	
 }
 
 int main(int argc, char* argv[])
@@ -105,5 +115,6 @@ int main(int argc, char* argv[])
 
 	XML_ParserFree(p_ctrl);
 	fclose(inXML);
+	cleanThreadList(startTR);
 	return 0;
 }
