@@ -38,7 +38,7 @@ void cleanThreadList(struct threadRecord *root)
 {
 	if (root == NULL)
 		return;
-	struct threadRecordList *nextOne = root->next;
+	struct threadRecord *nextOne = root->next;
 	free(root);
 	cleanThreadList(nextOne);
 }
