@@ -20,18 +20,18 @@ struct threadRecord
 static struct threadRecord *startTR = NULL;
 static char outputprefix[BUFFSZ]; 
 
-void mapThread(struct threadRecord *root, int tNum, char* fileName)
+void mapThread(struct threadRecord **root, int tNum, char *fileName)
 {
-	if (root == NULL) {
+	if (*root == NULL) {
 		struct threadRecord *newThread =
 			(struct threadRecord*)
 				malloc( sizeof (struct threadRecord));
 		newThread->number = tNum;
 		strcpy(newThread->path, fileName);
 		newThread->next = NULL;
-		root = newThread;
+		*root = newThread;
 	} else 
-		mapThread(root->next, tNum, fileName);
+		mapThread(&(*root->next), tNum, fileName);
 }
 
 void cleanThreadList(struct threadRecord *root)
