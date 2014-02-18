@@ -12,12 +12,40 @@ class PageRecord {
 		const long getPageNumber(void) const;
 		const long getLRUNumber(void) const;
 		void setLRUNumber(const long lruN);
+		virtual bool operator==(PageRecord& pR) const;
+		virtual bool operator<(PageRecord& pR) const;
 };
+
+class PageRecordLRU: public PageRecord {
+	public:
+	virtual bool operator==(PageRecord& pRLRU) const;
+	virtual bool operator<(PageRecord& pRLRU) const;
+}
 
 PageRecord::PageRecord(const long pgN, const long lruN)
 {
 	pageNumber = pgN;
 	lruNumber = lruN;
+}
+
+virtual bool PageRecord::operator==(PageRecord& pRecord) const
+{
+	return (pageNumber == pRecord.pageNumber);
+}
+
+virtual bool PageRecord::operator<(PageRecord& pRecord) const
+{
+	return (pageNumber < pRecord.pageNumber);
+}
+
+virtual bool PageRecordLRU::operator==(PageRecord& pRecordLRU)
+{
+	return (lruNumber == pRecordLRU.lruNumber);
+}
+
+virtual bool PageRecordLRU::operator<(PageRecord& pRecordLRU)
+{
+	return (lruNumber < pRecordLRU.lruNumber);
 }
 
 long PageRecord::getPageNumber(void) const
