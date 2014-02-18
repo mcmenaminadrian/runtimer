@@ -63,6 +63,21 @@ void PageRecord::setLRUNumber(const long lruN)
 	lruNumber = lruN;
 }
 
+redblacknode<PageRecord>* 
+	findPageInTree(long pageNumber, void *tree, void *root)
+{
+	redblacknode<PageRecord> *rootNode, *findNode;
+	redblacktree<redblacknode<PageRecord> >* nodeTree;
+
+	//set LRU time to -1 - only looking for PageNumber match
+	PageRecord addPR = PageRecord(pageNumber, -1);
+	findNode = new redblackNode<PageRecord>(addPR);
+	
+	rootNode = static_cast<redblacknode<PageRecord>*>(root);
+	nodeTree = static_cast<redblacktree<reblacknode<PageRecord> >*>(tree);
+	return nodeTree->locatenode(findNode, rootNode);
+}
+
 extern "C" {
 
 void* createPageTree(void)
@@ -94,25 +109,35 @@ void insertIntoPageTree(long pageNumber, long lruTime, void* tree, void* root)
 	PageRecord addPR = PageRecord(pageNumber, lruTime);
 	additionalNode = new redblackNode<PageRecord>(addPR);
 	
-	rootnode = static_cast<redblacknode<PageRecord>*>(root);
-	nodetree = static_cast<redblacktree<reblacknode<PageRecord> >*>(tree);
-	nodettree->insertnode(additionalNode, rootnode);
+	rootNode = static_cast<redblacknode<PageRecord>*>(root);
+	nodeTree = static_cast<redblacktree<reblacknode<PageRecord> >*>(tree);
+	nodeTree->insertnode(additionalNode, rootNode);
 }
 
 void* locateInPageTree(long pageNumber, void* tree, void* root)
 {
-	redblacknode<PageRecord> *rootNode, *findNode, *pageNode;
-	redblacktree<redblacknode<PageRecord> >* nodeTree;
-
-	//set LRU time to -1 - only looking for PageNumber match
-	PageRecord addPR = PageRecord(pageNumber, -1);
-	findNode = new redblackNode<PageRecord>(addPR);
 	
-	rootNode = static_cast<redblacknode<PageRecord>*>(root);
-	nodeTree = static_cast<redblacktree<reblacknode<PageRecord> >*>(tree);
-	pageNode = nodeTree->locatenode(findNode, rootNode);
+	redblacknode<PageRecord> *pageNode;
+	pageNode = findPageInTree(pageNumber, tree, root);
 	return static_cast<void *>(pageNode);
 }
+
+void removeFromPageTree(long PageNumber, void* tree, void* root)
+{
+	redblacknode<PageRecord> *pageNode;
+	redblacktree<redblacknode<PageRecord> >* nodeTree;
+	pageNode = findPageInTree(pageNumber, tree, root);
+	nodeTree = static_cast<redblacktree<redblacknode<PageRecord> >*>(tree);
+	nodeTree->removenode(*pageNode);
+}
+
+void updateLRU(long pageNumber, long lruTime, void* tree, void* root)
+{
+	removeFromPageTree(pageNumber, tree, root);
+	insertIntoPageTree(pageNumber, lruTime, tree, root);
+}
+
+	
 
 }// end extern "C"		
 	
