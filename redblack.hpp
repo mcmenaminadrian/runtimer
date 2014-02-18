@@ -450,7 +450,7 @@ template <typename NODE> NODE* redblacktree<NODE>::minright(NODE* node) const
 {
 
 	if (node->left)
-		minright(node->left);
+		return minright(node->left);
 	else
 		return node;
 }
@@ -499,7 +499,7 @@ template <typename NODE> int redblacktree<NODE>::count() const
 template <typename NODE> NODE* redblacktree<NODE>::maxleft(NODE* node) const
 {
 	if (node->right)
-		maxleft(node->right);
+		return maxleft(node->right);
 	else
 		return node;
 }

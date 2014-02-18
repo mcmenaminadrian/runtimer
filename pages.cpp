@@ -1,10 +1,10 @@
-#include <stdio>
+#include <iostream>
 #include "redblack.hpp"
 
-#using namespace std;
+using namespace std;
 
 class PageRecord {
-	private:
+	protected:
 		long pageNumber;
 		long lruNumber;
 	public:
@@ -20,7 +20,7 @@ class PageRecordLRU: public PageRecord {
 	public:
 	virtual bool operator==(PageRecord& pRLRU) const;
 	virtual bool operator<(PageRecord& pRLRU) const;
-}
+};
 
 PageRecord::PageRecord(const long pgN, const long lruN)
 {
@@ -28,32 +28,32 @@ PageRecord::PageRecord(const long pgN, const long lruN)
 	lruNumber = lruN;
 }
 
-virtual bool PageRecord::operator==(PageRecord& pRecord) const
+bool PageRecord::operator==(PageRecord& pRecord) const
 {
-	return (pageNumber == pRecord.pageNumber);
+	return (pageNumber == pRecord.getPageNumber());
 }
 
-virtual bool PageRecord::operator<(PageRecord& pRecord) const
+bool PageRecord::operator<(PageRecord& pRecord) const
 {
-	return (pageNumber < pRecord.pageNumber);
+	return (pageNumber < pRecord.getPageNumber());
 }
 
-virtual bool PageRecordLRU::operator==(PageRecord& pRecordLRU)
+bool PageRecordLRU::operator==(PageRecord& pRecordLRU) const
 {
-	return (lruNumber == pRecordLRU.lruNumber);
+	return (lruNumber == pRecordLRU.getLRUNumber());
 }
 
-virtual bool PageRecordLRU::operator<(PageRecord& pRecordLRU)
+bool PageRecordLRU::operator<(PageRecord& pRecordLRU) const
 {
-	return (lruNumber < pRecordLRU.lruNumber);
+	return (lruNumber < pRecordLRU.getLRUNumber());
 }
 
-long PageRecord::getPageNumber(void) const
+const long PageRecord::getPageNumber(void) const
 {
 	return pageNumber;
 }
 
-long PageRecord::getLRUNumber(void) const
+const long PageRecord::getLRUNumber(void) const
 {
 	return lruNumber;
 }
@@ -71,10 +71,10 @@ redblacknode<PageRecord>*
 
 	//set LRU time to -1 - only looking for PageNumber match
 	PageRecord addPR = PageRecord(pageNumber, -1);
-	findNode = new redblackNode<PageRecord>(addPR);
+	findNode = new redblacknode<PageRecord>(addPR);
 	
 	rootNode = static_cast<redblacknode<PageRecord>*>(root);
-	nodeTree = static_cast<redblacktree<reblacknode<PageRecord> >*>(tree);
+	nodeTree = static_cast<redblacktree<redblacknode<PageRecord> >*>(tree);
 	return nodeTree->locatenode(findNode, rootNode);
 }
 
@@ -97,7 +97,7 @@ void removePageTree(void* tree)
 void* getrootPageTree(void* tree)
 {
 	redblacktree<redblacknode<PageRecord> >* nodetree =
-		static_cast<redblacktree<redblacknode<pagechain> >*>(tree);
+		static_cast<redblacktree<redblacknode<PageRecord> >*>(tree);
 	return static_cast<void*>(nodetree->root);
 }
 
@@ -107,10 +107,10 @@ void insertIntoPageTree(long pageNumber, long lruTime, void* tree, void* root)
 	redblacktree<redblacknode<PageRecord> >* nodeTree;
 
 	PageRecord addPR = PageRecord(pageNumber, lruTime);
-	additionalNode = new redblackNode<PageRecord>(addPR);
+	additionalNode = new redblacknode<PageRecord>(addPR);
 	
 	rootNode = static_cast<redblacknode<PageRecord>*>(root);
-	nodeTree = static_cast<redblacktree<reblacknode<PageRecord> >*>(tree);
+	nodeTree = static_cast<redblacktree<redblacknode<PageRecord> >*>(tree);
 	nodeTree->insertnode(additionalNode, rootNode);
 }
 
@@ -122,7 +122,7 @@ void* locateInPageTree(long pageNumber, void* tree, void* root)
 	return static_cast<void *>(pageNode);
 }
 
-void removeFromPageTree(long PageNumber, void* tree, void* root)
+void removeFromPageTree(long pageNumber, void* tree, void* root)
 {
 	redblacknode<PageRecord> *pageNode;
 	redblacktree<redblacknode<PageRecord> >* nodeTree;

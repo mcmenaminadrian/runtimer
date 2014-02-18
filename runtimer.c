@@ -31,7 +31,7 @@ void mapThread(struct threadRecord **root, int tNum, char *fileName)
 		newThread->next = NULL;
 		*root = newThread;
 	} else 
-		mapThread(&(*root->next), tNum, fileName);
+		mapThread(&((*root)->next), tNum, fileName);
 }
 
 void cleanThreadList(struct threadRecord *root)
@@ -67,7 +67,7 @@ static void XMLCALL
 				break;
 			}
 		}
-		mapThread(startTR, threadID, threadPath);
+		mapThread(&startTR, threadID, threadPath);
 	}
 	//start the first thread
 	
