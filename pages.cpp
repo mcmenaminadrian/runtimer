@@ -22,6 +22,12 @@ class PageRecordLRU: public PageRecord {
 	virtual bool operator<(PageRecord& pRLRU) const;
 };
 
+class PageRecordTree {
+	public:
+	redblacktree<redblacknode<PageRecord> >* pageRecordTree;
+	redblacktree<redblacknode<PageRecordLRU> >* pageRecordLRUTree;
+};
+
 PageRecord::PageRecord(const long pgN, const long lruN)
 {
 	pageNumber = pgN;
