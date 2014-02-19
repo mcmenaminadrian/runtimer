@@ -124,11 +124,13 @@ void* createPageTree(void)
 
 void removePageTree(void* tree)
 {
-	redblacktree<redblacknode<PageRecord> >* rbtree;
-	rbtree = (static_cast<redblacktree<redblacknode<PageRecord> >* >(tree));
-	delete rbtree;
+	PageRecordTree* prTree;
+	prTree = (static_cast<PageRecordTree>(tree));
+	delete prTree->pageRecordTree
+	delete prTree->pageRecordLRUTree
+	delete prTree;
 }
-
+//clean up below here still
 void* getrootPageTree(void* tree)
 {
 	redblacktree<redblacknode<PageRecord> >* nodetree =
