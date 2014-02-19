@@ -30,6 +30,22 @@ class PageRecordTree {
 		redblacktree<redblacknode<PageRecordLRU> >*);
 };
 
+void* getMatchingTree(void* tree)
+{
+	redblacktree<redblacknode<PageRecord> >* testMatch =
+		static_cast<void *>(pageRecordTree);
+	redblacktree<redblacknode<PageRecord> >* testMatchLRU =
+		static_cast<void *>(pageRecordLRUTree);
+
+
+	if (tree == testMatch)
+		return pageRecordTree
+	else if (tree == testMatchLRU)
+		return pageRecordLRUTree;
+
+	return NULL;
+}
+
 PageRecordTree::PageRecordTree(redblacktree<redblacknode<PageRecord> >* prTree,
 	redblacktree<redblacknode<PageRecordLRU> >* prLRUTree)
 {
@@ -89,7 +105,7 @@ redblacknode<PageRecord>*
 	findNode = new redblacknode<PageRecord>(addPR);
 	
 	rootNode = static_cast<redblacknode<PageRecord>*>(root);
-	nodeTree = static_cast<redblacktree<redblacknode<PageRecord> >*>(tree);
+	nodeTree = getMatchingTree(tree);
 	return nodeTree->locatenode(findNode, rootNode);
 }
 
