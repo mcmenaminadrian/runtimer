@@ -26,7 +26,16 @@ class PageRecordTree {
 	public:
 	redblacktree<redblacknode<PageRecord> >* pageRecordTree;
 	redblacktree<redblacknode<PageRecordLRU> >* pageRecordLRUTree;
+	PageRecordTree(redblacktree<redblacknode<PageRecord> >*,
+		redblacktree<redblacknode<PageRecordLRU> >*);
 };
+
+PageRecordTree::PageRecordTree(redblacktree<redblacknode<PageRecord> >* prTree,
+	redblacktree<redblacknode<PageRecordLRU> >* prLRUTree)
+{
+	pageRecordTree = prTree;
+	pageRecordLRUTree = prLRUTree;
+}
 
 PageRecord::PageRecord(const long pgN, const long lruN)
 {
@@ -88,9 +97,13 @@ extern "C" {
 
 void* createPageTree(void)
 {
-	redblacktree<redblacknode<PageRecord> >* tree;
-	tree = new redblacktree<redblacknode<PageRecord> >();
-	return static_cast<void*>(tree);
+	redblacktree<redblacknode<PageRecord> >* treePR;
+	redblacktree<redblacknode<PageRecordLRU> >* treeLRU;
+	PageRecordTree prTree;
+	treePR = new redblacktree<redblacknode<PageRecord> >();
+	treeLRU = new redblacktree<redblacknode<PageRecordLRU> >();
+	prTree = new PageRecordTree(treePR, treeLRU)
+	return static_cast<void*>(prTree);
 }
 
 void removePageTree(void* tree)
