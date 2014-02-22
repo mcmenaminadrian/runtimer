@@ -19,6 +19,7 @@ class PageRecord {
 
 class PageRecordLRU: public PageRecord {
 	public:
+	PageRecordLRU(const long pgN, const long lruN):PageRecord(pgN, lruN){};
 	virtual bool operator==(PageRecord& pRLRU) const;
 	virtual bool operator<(PageRecord& pRLRU) const;
 };
@@ -27,34 +28,18 @@ class PageRecordTree {
 	public:
 	redblacktree<redblacknode<PageRecord> >* pageRecordTree;
 	redblacktree<redblacknode<PageRecordLRU> >* pageRecordLRUTree;
-	pthread_mutex_t tree_mutex;
+	pthread_mutex_t tree_lock;
 
 	PageRecordTree(redblacktree<redblacknode<PageRecord> >*,
 		redblacktree<redblacknode<PageRecordLRU> >*);
 };
-
-void* getMatchingTree(void* tree)
-{
-	redblacktree<redblacknode<PageRecord> >* testMatch =
-		static_cast<void *>(pageRecordTree);
-	redblacktree<redblacknode<PageRecord> >* testMatchLRU =
-		static_cast<void *>(pageRecordLRUTree);
-
-
-	if (tree == testMatch)
-		return pageRecordTree
-	else if (tree == testMatchLRU)
-		return pageRecordLRUTree;
-
-	return NULL;
-}
 
 PageRecordTree::PageRecordTree(redblacktree<redblacknode<PageRecord> >* prTree,
 	redblacktree<redblacknode<PageRecordLRU> >* prLRUTree)
 {
 	pageRecordTree = prTree;
 	pageRecordLRUTree = prLRUTree;
-	tree_mutex = PTHREAD_MUTEX_INITIALIZER;
+	pthread_mutex_init(&tree_lock, NULL);
 }
 
 PageRecord::PageRecord(const long pgN, const long lruN)
@@ -102,36 +87,46 @@ redblacknode<PageRecord>* findPageInTree(redblacknode<PageRecord>* node,
 	redblacktree<redblacknode<PageRecord> > *tree)
 {
 	redblacknode<PageRecord> *root = tree->root;
-	return nodeTree->locatenode(findNode, root);
+	return (tree->locatenode(node, root));
 }
 
-redblacknode<PageRecord>* locatePR(long PageNumber, void* tree)
+redblacknode<PageRecordLRU>*
+findPageLRUInTree(redblacknode<PageRecordLRU>* node,
+	redblacktree<redblacknode<PageRecordLRU> > *tree)
+{
+	redblacknode<PageRecordLRU> *root = tree->root;
+	return (tree->locatenode(node, root));
+}	
+
+redblacknode<PageRecord>* locatePR(long pageNumber, void* tree)
 {
 	PageRecordTree *prTree;
-	redblacknode<PageRecord> *finder;
+	redblacknode<PageRecord> *finder, *pageNode;
 	PageRecord prFind = PageRecord(pageNumber, -1);
 	prTree = static_cast<PageRecordTree *>(tree);
-	finder = new redblacknode<PageRecord>(prFind)
-	pageNode = findPageInTree(prFind, prTree->pageRecordTree);
+	finder = new redblacknode<PageRecord>(prFind);
+	pageNode = findPageInTree(finder, prTree->pageRecordTree);
 	delete finder;
 	return pageNode;
 }
 
-redblacknode<PageRecordLRU>* locateLRU(long PageNumber, void* tree)
+redblacknode<PageRecordLRU>* locateLRU(long pageNumber, void* tree)
 {
 	PageRecordTree *prTree;
-	redblacknode<PageRecord> *finder, *pageNode, *lruNode;
-	redblacknode<PageRecordLRU> *finderLRU;
+	redblacknode<PageRecord> *finder, *pageNode;
+	redblacknode<PageRecordLRU> *finderLRU, *lruNode;
 
 	PageRecord prFind = PageRecord(pageNumber, -1);
 	prTree = static_cast<PageRecordTree *>(tree);
-	finder = new redblacknode<PageRecord>(prFind)
+	finder = new redblacknode<PageRecord>(prFind);
 	
 	pageNode = findPageInTree(finder, prTree->pageRecordTree);
-	delete finder;	
-	PageRecordLRU lruFind = PageRecordLRU(pageNumber, pageNode->getLRUN());
+	delete finder;
+	
+	PageRecordLRU lruFind = PageRecordLRU(pageNumber,
+		pageNode->getvalue().getLRUNumber());
 	finderLRU = new redblacknode<PageRecordLRU>(lruFind);
-	lruNode = findPageInTree(finderLRU, prTree->pageRecordLRUTree);
+	lruNode = findPageLRUInTree(finderLRU, prTree->pageRecordLRUTree);
 	delete finderLRU;
 
 	return lruNode;
@@ -143,79 +138,76 @@ void* createPageTree(void)
 {
 	redblacktree<redblacknode<PageRecord> >* treePR;
 	redblacktree<redblacknode<PageRecordLRU> >* treeLRU;
-	PageRecordTree prTree;
+	PageRecordTree* prTree;
 	treePR = new redblacktree<redblacknode<PageRecord> >();
 	treeLRU = new redblacktree<redblacknode<PageRecordLRU> >();
-	prTree = new PageRecordTree(treePR, treeLRU)
+	prTree = new PageRecordTree(treePR, treeLRU);
 	return static_cast<void*>(prTree);
 }
 
 void removePageTree(void* tree)
 {
 	PageRecordTree* prTree;
-	prTree = static_cast<PageRecordTree>(tree);
-	pthread_mutex_lock(&prTree->tree_mutex);
+	prTree = static_cast<PageRecordTree *>(tree);
+	pthread_mutex_lock(&prTree->tree_lock);
 	delete prTree->pageRecordTree;
 	delete prTree->pageRecordLRUTree;
-	pthread_mutex_unlock(&prTree->tree_mutex);
+	pthread_mutex_unlock(&prTree->tree_lock);
 	delete prTree;
 }
 
-void* getRootPageTree(void* tree)
+inline void* getRootPageTree(void* tree)
 {
 	PageRecordTree *prTree;
-	prTree = static_cast<PageRecordTree *>tree;
+	prTree = static_cast<PageRecordTree *>(tree);
 	return static_cast<void*>(prTree->pageRecordTree->root);
 }
 
-void* getRootPageTreeLRU(void* tree)
+inline void* getRootPageTreeLRU(void* tree)
 {
 	PageRecordTree *prTree;
-	prTree = static_cast<PageRecordLRUTree *>tree;
+	prTree = static_cast<PageRecordTree *>(tree);
 	return static_cast<void*>(prTree->pageRecordLRUTree->root);
 }
-
-	
 
 void insertIntoPageTree(long pageNumber, long lruTime, void* tree)
 {
 	PageRecordTree *prTree;
-	redblacknode<PageRecord> *additionPRNode, *rootPR;
-	redblacknode<PageRecordLRU> *additionLRUNode, *rootLRU;
+	redblacknode<PageRecord> *additionPRNode;
+	redblacknode<PageRecordLRU> *additionLRUNode;
 
 	prTree = static_cast<PageRecordTree *>(tree);
 	PageRecord addPR = PageRecord(pageNumber, lruTime);
-	PageRecord addPRLRU = PageRecordLRU(pageNumber, lruTime);
+	PageRecordLRU addPRLRU = PageRecordLRU(pageNumber, lruTime);
 
-	PageRecord addPR = PageRecord(pageNumber, lruTime);
-	additionNode = new redblacknode<PageRecord>(addPR);
+	additionPRNode = new redblacknode<PageRecord>(addPR);
 	additionLRUNode = new redblacknode<PageRecordLRU>(addPRLRU);
 
-	pthread_mutex_lock(&prTree->tree_mutex);
-	rootPR = getRootPageTree(tree);
-	rootLRU = getRootPageTreeLRU(tree)
+	pthread_mutex_lock(&prTree->tree_lock);
 	
-	prTree->pageRecordTree->insertnode(additionPRNode, rootPR);
-	prTree->pageRecordLRUTree->insertnode(additionLRUNode, rootLRU);
-	pthread_mutex_unlock(&prTree->tree_mutex);
-}
-
-void* locateInPageTreePR(long pageNumber, void* tree)
-{
-	PageRecordTree *prTree;
-	prTree = static_cast<PageRecordTree *>(tree);
-	pthread_mutex_lock(&prTree->tree_lock);
-	redblacknode<PageRecord> *pageNode = findPR(pageNumber, tree);
+	prTree->pageRecordTree->insertnode(additionPRNode,
+		prTree->pageRecordTree->root);
+	prTree->pageRecordLRUTree->insertnode(additionLRUNode,
+		prTree->pageRecordLRUTree->root);
 	pthread_mutex_unlock(&prTree->tree_lock);
-	return static_cast<void *>(pageNode);
 }
 
-void* locateInPageTreeLRU(long pageNumber, void* tree)
+void* locatePageTreePR(long pageNumber, void* tree)
 {
 	PageRecordTree *prTree;
 	prTree = static_cast<PageRecordTree *>(tree);
 	pthread_mutex_lock(&prTree->tree_lock);
-	redblacknode<PageRecord> *lruNode = locateLRU(pageNumber, tree);
+	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, tree);
+	pthread_mutex_unlock(&prTree->tree_lock);
+	return static_cast<void*>(pageNode);
+}
+
+void* locatePageTreeLRU(long pageNumber, void* tree)
+{
+	PageRecordTree *prTree;
+	prTree = static_cast<PageRecordTree *>(tree);
+	pthread_mutex_lock(&prTree->tree_lock);
+	redblacknode<PageRecordLRU> *lruNode = locateLRU(pageNumber, tree);
 	pthread_mutex_unlock(&prTree->tree_lock);
 	return static_cast<void*>(lruNode);
 }
@@ -226,20 +218,18 @@ void removeFromPageTree(long pageNumber, void* tree)
 	PageRecordTree *prTree;
 	prTree = static_cast<PageRecordTree *>(tree);
 	pthread_mutex_lock(&prTree->tree_lock);
-	redblacknode<PageRecord> *pageNode = findPR(pageNumber, tree);
+	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, tree);
 	redblacknode<PageRecordLRU> *lruNode = locateLRU(pageNumber, tree);
 	prTree->pageRecordTree->removenode(*pageNode);
 	prTree->pageRecordLRUTree->removenode(*lruNode);
 	pthread_mutex_unlock(&prTree->tree_lock);
 }
-//this far
-void updateLRU(long pageNumber, long lruTime, void* tree, void* root)
-{
-	removeFromPageTree(pageNumber, tree, root);
-	insertIntoPageTree(pageNumber, lruTime, tree, root);
-}
 
-	
+void updateLRU(long pageNumber, long lruTime, void* tree)
+{
+	removeFromPageTree(pageNumber, tree);
+	insertIntoPageTree(pageNumber, lruTime, tree);
+}
 
 }// end extern "C"		
 	
