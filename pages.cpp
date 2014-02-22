@@ -247,6 +247,13 @@ exit:
 	return oldest;
 }
 
+int countPageTree(void* tree)
+{
+	PageRecordTree *prTree;
+	prTree = static_cast<PageRecordTree *>(tree);
+	return prTree->pageRecordTree->count();
+}
+
 void updateLRU(long pageNumber, long lruTime, void* tree)
 {
 	removeFromPageTree(pageNumber, tree);
