@@ -225,6 +225,28 @@ void removeFromPageTree(long pageNumber, void* tree)
 	pthread_mutex_unlock(&prTree->tree_lock);
 }
 
+void* removeOldestFromPageTree(void* tree)
+{
+	PageRecordTree *prTree;
+	long pageNumber;
+	redblacknode<PageRecord> *pageNode;
+	redblacknode<PageRecordLRU> *lruNode;
+
+	prTree = static_cast<PageRecordTree *>(tree);
+	pthread_mutex_lock(&prTree->tree_lock);
+	redblacknode<PageRecordLRU> *oldest = prTree->pageRecordLRUTree->max();
+	if (oldest == NULL)
+		goto exit;
+	pageNumber = oldest->getvalue().getPageNumber();
+	pageNode = locatePR(pageNumber, tree);
+	lruNode = locateLRU(pageNumber, tree);
+	prTree->pageRecordTree->removenode(*pageNode);
+	prTree->pageRecordLRUTree->removenode(*lruNode);	
+exit:
+	pthread_mutex_unlock(&prTree->tree_lock);
+	return oldest;
+}
+
 void updateLRU(long pageNumber, long lruTime, void* tree)
 {
 	removeFromPageTree(pageNumber, tree);
