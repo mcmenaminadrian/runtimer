@@ -38,6 +38,7 @@ struct threadResources
 	struct threadRecord *records;
 	void* globalTree;
 	struct threadGlobal* globals;
+	struct threadLocal* local;
 };
 
 

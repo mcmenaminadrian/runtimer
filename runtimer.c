@@ -103,8 +103,9 @@ static void XMLCALL
 		free(globalThreadList);
 		return;
 	}
-	firstThreadLocal->
-	globalThreadList->head = firstThread 
+	globalThreadList->head = firstThreadLocal;
+	globalThreadList->tail = firstThreadLocal;
+	readOPTTree(firstThreadLocal->optTree, startTR->path); 
 	
 }
 
