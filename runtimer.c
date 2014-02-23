@@ -2,36 +2,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <expat.h>
-
-
-#define BUFFSZ 512
-#define BITSHIFT 12
-#define CORES 16
-#define COREMEM 32
-
-
-struct threadRecord
-{
-	int number;
-	char path[BUFFSZ];
-	struct threadRecord *next;
-};
+#include <pthread.h>
+#include "pages.h"
+#include "threadhandler.h"
 
 static struct threadRecord *startTR = NULL;
-static char outputprefix[BUFFSZ]; 
+static char outputprefix[BUFFSZ];
+static struct threadGlobal *globalThreadList = NULL;
 
-void mapThread(struct threadRecord **root, int tNum, char *fileName)
+void mapThread(struct threadRecord *root, int tNum, char *fileName)
 {
-	if (*root == NULL) {
+	if (root == NULL) {
 		struct threadRecord *newThread =
 			(struct threadRecord*)
 				malloc( sizeof (struct threadRecord));
 		newThread->number = tNum;
 		strcpy(newThread->path, fileName);
 		newThread->next = NULL;
-		*root = newThread;
+		root = newThread;
 	} else 
-		mapThread(&((*root)->next), tNum, fileName);
+		mapThread(root->next, tNum, fileName);
 }
 
 void cleanThreadList(struct threadRecord *root)
@@ -67,9 +57,54 @@ static void XMLCALL
 				break;
 			}
 		}
-		mapThread(&startTR, threadID, threadPath);
+		mapThread(startTR, threadID, threadPath);
 	}
 	//start the first thread
+	//first task is read the OPT string
+	globalThreadList =
+		(struct threadGlobal*)malloc(sizeof (struct threadGlobal));
+	if (!globalThreadList) {
+		fprintf(stderr,
+			"Could not allocate memory for threadGlobal.\n");
+		return;
+	}
+	struct threadLocal *firstThreadLocal =
+		(struct threadLocal*)malloc(sizeof(struct threadLocal));
+	if (!firstThreadLocal) {
+		fprintf(stderr,
+			"Could not allocate memory for threadLocal.\n");
+		free(globalThreadList);
+		return;
+	}
+	firstThreadLocal->localTree = createPageTree();
+	if (!firstThreadLocal->localTree) {
+		fprintf(stderr,
+			"Could not initialise local tree.\n");
+		free(firstThreadLocal);
+		free(globalThreadList);
+		return;
+	}
+	firstThreadLocal->optTree = createOPTTree();
+	if (!firstThreadLocal->optTree) {
+		fprintf(stderr,
+			"Could not initialise OPT tree.\n");
+		removePageTree(firstThreadLocal->localTree);
+		free(firstThreadLocal);
+		free(globalThreadList);
+		return;
+	}
+	firstThreadLocal->threadNumber = startTR->number;
+	int err = pthread_mutex_init(&firstThreadLocal->threadLocalLock, NULL);
+	if (err) {
+		fprintf(stderr, "Mutex initialisation fails with %li.\n", err);
+		removeOPTTrree(firstThreadLocal->optTree);
+		removePageTree(firstThreadLocal->localTree);
+		free(firstThreadLocal);
+		free(globalThreadList);
+		return;
+	}
+	firstThreadLocal->
+	globalThreadList->head = firstThread 
 	
 }
 

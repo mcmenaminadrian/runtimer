@@ -189,7 +189,7 @@ void insertIntoPageTree(long pageNumber, long lruTime, void* tree)
 		prTree->pageRecordTree->root);
 	prTree->pageRecordLRUTree->insertnode(additionLRUNode,
 		prTree->pageRecordLRUTree->root);
-	pthread_mutex_unlock(&prTree->tree_lock);
+	inpthread_mutex_unlock(&prTree->tree_lock);
 }
 
 void* locatePageTreePR(long pageNumber, void* tree)
@@ -261,9 +261,3 @@ void updateLRU(long pageNumber, long lruTime, void* tree)
 }
 
 }// end extern "C"		
-	
-	
-	 
-
-
-		
