@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include "pages.h"
 #include "threadhandler.h"
+#include "opttree.h"
 
 static struct threadRecord *startTR = NULL;
 static char outputprefix[BUFFSZ];
@@ -96,7 +97,7 @@ static void XMLCALL
 	firstThreadLocal->threadNumber = startTR->number;
 	int err = pthread_mutex_init(&firstThreadLocal->threadLocalLock, NULL);
 	if (err) {
-		fprintf(stderr, "Mutex initialisation fails with %li.\n", err);
+		fprintf(stderr, "Mutex initialisation fails with %i.\n", err);
 		removeOPTTrree(firstThreadLocal->optTree);
 		removePageTree(firstThreadLocal->localTree);
 		free(firstThreadLocal);

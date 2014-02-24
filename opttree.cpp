@@ -117,9 +117,20 @@ InstructionChain*
 }
 		
 
+
+void cleanOPTTree(redblacknode<OPTTree>* node)
+{
+	if (node == NULL)
+		return;
+	cleanOPTree(node->left);
+	cleanOPTTree(node->right);
+	node->getvalue();
+}
+
+
 extern "C" {
 
-void* createOPTTree()
+void* createOPTTree(void)
 {
 	redblacktree<redblacknode<OPTTree> >* optTree;
 	optTree = new redblacktree<redblacknode<OPTTree> >();
@@ -155,6 +166,14 @@ void readOPTTree(void *tree, char *path)
 		optRBTree->insertnode(rbOPTNode, optRBTree->root);
 	}
 }
+
+void removeOPTTree(void* tree)
+{
+	redblacktree<redblacknode<OPTTree> >* optTree;
+	optTree = static_cast<redblacktree<redblacknode<OPTTree> >*>(tree);
+	cleanOPTTree(optTree->root);
+}	
+	
 
 } //end extern "C"
 
