@@ -142,7 +142,7 @@ void readOPTTree(void *tree, char *path)
 {
 	int longLength = sizeof(long);
 	char buff[longLength];
-
+	printf("Longlength: %i path:%s\n", longLength, path);
 	redblacktree<redblacknode<OPTTree> >* optRBTree;
 	optRBTree = static_cast<redblacktree<redblacknode<OPTTree> >*>(tree);
 
@@ -155,7 +155,7 @@ void readOPTTree(void *tree, char *path)
 		InstructionChain* addPoint = nextPage.getHead();
 		do {
 			inFile.read(buff, longLength);
-			nextInstructionRead = atol(buff);
+			nextInstructionRead = atol(buff); printf(" %li ",nextInstructionRead);
 			if (nextInstructionRead > 0) {
 				InstructionChain* nextLink =
 				new InstructionChain(nextInstructionRead);
@@ -165,7 +165,7 @@ void readOPTTree(void *tree, char *path)
 		} while (nextInstructionRead > 0);
 		redblacknode<OPTTree> rbOPTNode(nextPage);
 		optRBTree->insertnode(&rbOPTNode, optRBTree->root);
-		printf("Just inserted node for page %li\n", pageNumberRead);
+		printf("Inserted node for page %li\n", pageNumberRead);
 	}
 }
 

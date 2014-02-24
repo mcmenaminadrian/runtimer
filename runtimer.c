@@ -11,7 +11,8 @@ static struct threadRecord *startTR = NULL;
 static char outputprefix[BUFFSZ];
 static struct threadGlobal *globalThreadList = NULL;
 
-void mapThread(struct threadRecord *root, int tNum, char *fileName)
+struct threadRecord*
+	mapThread(struct threadRecord *root, int tNum, char *fileName)
 {
 	if (root == NULL) {
 		struct threadRecord *newThread =
@@ -21,8 +22,9 @@ void mapThread(struct threadRecord *root, int tNum, char *fileName)
 		strcpy(newThread->path, fileName);
 		newThread->next = NULL;
 		root = newThread;
+		return root;
 	} else 
-		mapThread(root->next, tNum, fileName);
+		return mapThread(root->next, tNum, fileName);
 }
 
 void cleanThreadList(struct threadRecord *root)
@@ -44,7 +46,7 @@ static void XMLCALL
 {
 	int i;
 	int threadID = 0;
-	char threadPath[BUFFSZ];
+	char threadPath[BUFFSZ]; 
 	if (strcmp(name, "file") == 0) {
 		for (i = 0; attr[i]; i += 2) {
 			if (strcmp(attr[i], "thread") == 0) {
@@ -58,8 +60,15 @@ static void XMLCALL
 				break;
 			}
 		}
-		mapThread(startTR, threadID, threadPath);
-	}
+		struct threadRecord* endRecord = mapThread(startTR, threadID,
+			threadPath);
+		if (startTR == NULL)
+			startTR = endRecord;
+	} 
+}
+
+void startFirstThread(char* outputprefix)
+{
 	//start the first thread
 	//first task is read the OPT string
 	globalThreadList =
@@ -106,9 +115,11 @@ static void XMLCALL
 	}
 	globalThreadList->head = firstThreadLocal;
 	globalThreadList->tail = firstThreadLocal;
-	readOPTTree(firstThreadLocal->optTree, startTR->path); 
-	
+	char threadname[BUFFSZ];
+	sprintf(threadname, "%s%i.bin",outputprefix, startTR->number);
+	readOPTTree(firstThreadLocal->optTree, threadname);
 }
+
 
 int main(int argc, char* argv[])
 {
@@ -152,6 +163,7 @@ int main(int argc, char* argv[])
 
 	XML_ParserFree(p_ctrl);
 	fclose(inXML);
+	startFirstThread(outputprefix); //test code for now
 	cleanThreadList(startTR);
 	return 0;
 }
