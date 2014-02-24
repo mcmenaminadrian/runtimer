@@ -43,7 +43,7 @@ static void XMLCALL
 	starthandler(void *data, const XML_Char *name, const XML_Char **attr)
 {
 	int i;
-	int threadID;
+	int threadID = 0;
 	char threadPath[BUFFSZ];
 	if (strcmp(name, "file") == 0) {
 		for (i = 0; attr[i]; i += 2) {
