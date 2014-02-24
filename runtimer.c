@@ -98,7 +98,7 @@ static void XMLCALL
 	int err = pthread_mutex_init(&firstThreadLocal->threadLocalLock, NULL);
 	if (err) {
 		fprintf(stderr, "Mutex initialisation fails with %i.\n", err);
-		removeOPTTrree(firstThreadLocal->optTree);
+		removeOPTTree(firstThreadLocal->optTree);
 		removePageTree(firstThreadLocal->localTree);
 		free(firstThreadLocal);
 		free(globalThreadList);
