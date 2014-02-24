@@ -165,6 +165,7 @@ void readOPTTree(void *tree, char *path)
 		} while (nextInstructionRead > 0);
 		redblacknode<OPTTree> rbOPTNode(nextPage);
 		optRBTree->insertnode(&rbOPTNode, optRBTree->root);
+		printf("Just inserted node for page %li\n", pageNumberRead);
 	}
 }
 
