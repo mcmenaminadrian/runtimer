@@ -8,18 +8,18 @@ using namespace std;
 class InstructionChain
 {
 	private:
-	long instruction;
+	unsigned long instruction;
 	InstructionChain* next;
 
 	public:
-	InstructionChain(long inst);
+	InstructionChain(unsigned long inst);
 	~InstructionChain();
-	const long getInstruction(void) const;
+	const unsigned long getInstruction(void) const;
 	InstructionChain* getNext(void) const;
 	InstructionChain* setNext(InstructionChain* next);
 };
 
-InstructionChain::InstructionChain(long inst)
+InstructionChain::InstructionChain(unsigned long inst)
 {
 	instruction = inst;
 	next = NULL;
@@ -39,7 +39,7 @@ InstructionChain::~InstructionChain()
 	killInstructionChain(getNext());
 }
 
-const long InstructionChain::getInstruction(void) const
+const unsigned long InstructionChain::getInstruction(void) const
 {
 	return instruction;
 }
@@ -59,7 +59,7 @@ InstructionChain* InstructionChain::setNext(InstructionChain *nx)
 class OPTTreeNode {
 
 	private:
-	long page;
+	unsigned long page;
 	InstructionChain* head;
 
 	public:
@@ -140,6 +140,7 @@ void* createOPTTree(void)
 void readOPTTree(void *tree, char *path)
 {
 	int longLength = sizeof(long);
+	unsigned long nextInstructionRead, pageNumberRead;
 	char buff[longLength];
 	printf("Longlength: %i path:%s\n", longLength, path);
 	redblacktree<redblacknode<OPTTreeNode> >* optRBTree;
@@ -148,14 +149,15 @@ void readOPTTree(void *tree, char *path)
 
 	ifstream inFile(path, ifstream::binary);
 	while (inFile && inFile.eof() == false) {
-		long nextInstructionRead, pageNumberRead;
 		inFile.read(buff, longLength);
-		pageNumberRead = atol(buff);
+		if (!inFile)
+			printf("Danger Will Robertson\n");
+		pageNumberRead = static_cast<unsigned long>(*buff);
 		OPTTreeNode nextPage(pageNumberRead);
 		InstructionChain* addPoint = nextPage.getHead();
 		do {
 			inFile.read(buff, longLength);
-			nextInstructionRead = atol(buff); printf(" %li ",nextInstructionRead);
+			nextInstructionRead = static_cast<unsigned long>(*buff); printf(" %li ",nextInstructionRead);
 			if (nextInstructionRead > 0) {
 				InstructionChain* nextLink =
 				new InstructionChain(nextInstructionRead);
