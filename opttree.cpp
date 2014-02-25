@@ -63,7 +63,7 @@ class OPTTreeNode {
 	InstructionChain* head;
 
 	public:
-	OPTTreeNode(long where);
+	OPTTreeNode(unsigned long where);
 	const long getPage(void) const;
 	bool operator==(OPTTreeNode&) const;
 	bool operator<(OPTTreeNode&) const;
@@ -73,7 +73,7 @@ class OPTTreeNode {
 		pushToEnd(InstructionChain* s, InstructionChain* a);
 };
 
-OPTTreeNode::OPTTreeNode(long where)
+OPTTreeNode::OPTTreeNode(unsigned long where)
 {
 	page = where;
 	head = NULL;
@@ -139,7 +139,7 @@ void* createOPTTree(void)
 
 void readOPTTree(void *tree, char *path)
 {
-	int longLength = sizeof(long);
+	int longLength = sizeof(unsigned long);
 	unsigned long nextInstructionRead, pageNumberRead;
 	char buff[longLength];
 	printf("Longlength: %i path:%s\n", longLength, path);
@@ -157,14 +157,14 @@ void readOPTTree(void *tree, char *path)
 		InstructionChain* addPoint = nextPage.getHead();
 		do {
 			inFile.read(buff, longLength);
-			nextInstructionRead = static_cast<unsigned long>(*buff); printf(" %li ",nextInstructionRead);
-			if (nextInstructionRead > 0) {
+			nextInstructionRead = static_cast<unsigned long>(*buff); printf(" %lu ",nextInstructionRead);
+			if (nextInstructionRead != 0) {
 				InstructionChain* nextLink =
 				new InstructionChain(nextInstructionRead);
 				addPoint =
 					nextPage.pushToEnd(addPoint, nextLink);
 			}
-		} while (nextInstructionRead > 0);
+		} while (nextInstructionRead != 0);
 		redblacknode<OPTTreeNode> rbOPTNode(nextPage);
 		optRBTree->insertnode(&rbOPTNode, optRBTree->root);
 		printf("Inserted node for page %li\n", pageNumberRead);
