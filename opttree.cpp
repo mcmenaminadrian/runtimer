@@ -56,56 +56,56 @@ InstructionChain* InstructionChain::setNext(InstructionChain *nx)
 }
 	
 
-class OPTTree {
+class OPTTreeNode {
 
 	private:
 	long page;
 	InstructionChain* head;
 
 	public:
-	OPTTree(long where);
+	OPTTreeNode(long where);
 	const long getPage(void) const;
-	bool operator==(OPTTree&) const;
-	bool operator<(OPTTree&) const;
+	bool operator==(OPTTreeNode&) const;
+	bool operator<(OPTTreeNode&) const;
 	InstructionChain* getHead(void) const;
 	void setHead(InstructionChain* newhead);
 	InstructionChain*
 		pushToEnd(InstructionChain* s, InstructionChain* a);
 };
 
-OPTTree::OPTTree(long where)
+OPTTreeNode::OPTTreeNode(long where)
 {
 	page = where;
 	head = NULL;
 }
 
-const long OPTTree::getPage() const
+const long OPTTreeNode::getPage() const
 {
 	return page;
 }
 
-bool OPTTree::operator==(OPTTree& opt) const	
+bool OPTTreeNode::operator==(OPTTreeNode& opt) const	
 {
 	return (page == opt.page);
 }
 
-bool OPTTree::operator<(OPTTree& opt) const
+bool OPTTreeNode::operator<(OPTTreeNode& opt) const
 {
 	return (page < opt.page);
 }
 
-InstructionChain* OPTTree::getHead(void) const
+InstructionChain* OPTTreeNode::getHead(void) const
 {
 	return head;
 }
 
-void OPTTree::setHead(InstructionChain* ic)
+void OPTTreeNode::setHead(InstructionChain* ic)
 {
 	head = ic;
 }
 
 InstructionChain*
-	OPTTree::pushToEnd(InstructionChain* start, InstructionChain* add)
+	OPTTreeNode::pushToEnd(InstructionChain* start, InstructionChain* add)
 {
 	if (head == NULL) {
 		head = add;
@@ -119,7 +119,7 @@ InstructionChain*
 }
 
 
-void cleanOPTTree(redblacknode<OPTTree>* node)
+void cleanOPTTree(redblacknode<OPTTreeNode>* node)
 {
 	if (node == NULL)
 		return;
@@ -128,13 +128,12 @@ void cleanOPTTree(redblacknode<OPTTree>* node)
 	delete node->getvalue().getHead();
 }
 
-
 extern "C" {
 
 void* createOPTTree(void)
 {
-	redblacktree<redblacknode<OPTTree> >* optTree;
-	optTree = new redblacktree<redblacknode<OPTTree> >();
+	redblacktree<redblacknode<OPTTreeNode> >* optTree;
+	optTree = new redblacktree<redblacknode<OPTTreeNode> >();
 	return static_cast<void *>(optTree);
 }
 
@@ -143,15 +142,16 @@ void readOPTTree(void *tree, char *path)
 	int longLength = sizeof(long);
 	char buff[longLength];
 	printf("Longlength: %i path:%s\n", longLength, path);
-	redblacktree<redblacknode<OPTTree> >* optRBTree;
-	optRBTree = static_cast<redblacktree<redblacknode<OPTTree> >*>(tree);
+	redblacktree<redblacknode<OPTTreeNode> >* optRBTree;
+	optRBTree =
+		static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
 
-	ifstream inFile(path, ios_base::binary);
-	while (inFile.eof() == false) {
+	ifstream inFile(path, ifstream::binary);
+	while (inFile && inFile.eof() == false) {
 		long nextInstructionRead, pageNumberRead;
 		inFile.read(buff, longLength);
 		pageNumberRead = atol(buff);
-		OPTTree nextPage(pageNumberRead);
+		OPTTreeNode nextPage(pageNumberRead);
 		InstructionChain* addPoint = nextPage.getHead();
 		do {
 			inFile.read(buff, longLength);
@@ -163,7 +163,7 @@ void readOPTTree(void *tree, char *path)
 					nextPage.pushToEnd(addPoint, nextLink);
 			}
 		} while (nextInstructionRead > 0);
-		redblacknode<OPTTree> rbOPTNode(nextPage);
+		redblacknode<OPTTreeNode> rbOPTNode(nextPage);
 		optRBTree->insertnode(&rbOPTNode, optRBTree->root);
 		printf("Inserted node for page %li\n", pageNumberRead);
 	}
@@ -171,8 +171,8 @@ void readOPTTree(void *tree, char *path)
 
 void removeOPTTree(void* tree)
 {
-	redblacktree<redblacknode<OPTTree> >* optTree;
-	optTree = static_cast<redblacktree<redblacknode<OPTTree> >*>(tree);
+	redblacktree<redblacknode<OPTTreeNode> >* optTree;
+	optTree = static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
 	cleanOPTTree(optTree->root);
 }	
 	
