@@ -141,23 +141,20 @@ void readOPTTree(void *tree, char *path)
 {
 	int longLength = sizeof(unsigned long);
 	unsigned long nextInstructionRead, pageNumberRead;
-	char buff[longLength];
-	printf("Longlength: %i path:%s\n", longLength, path);
+	char* buffIn = new char[longLength];
 	redblacktree<redblacknode<OPTTreeNode> >* optRBTree;
 	optRBTree =
 		static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
 
 	ifstream inFile(path, ifstream::binary);
 	while (inFile && inFile.eof() == false) {
-		inFile.read(buff, longLength);
-		if (!inFile)
-			printf("Danger Will Robertson\n");
-		pageNumberRead = static_cast<unsigned long>(*buff);
+		inFile.read(buffIn, longLength);
+		pageNumberRead = *((unsigned long*)buffIn);	
 		OPTTreeNode nextPage(pageNumberRead);
 		InstructionChain* addPoint = nextPage.getHead();
 		do {
-			inFile.read(buff, longLength);
-			nextInstructionRead = static_cast<unsigned long>(*buff); printf(" %lu ",nextInstructionRead);
+			inFile.read(buffIn, longLength);
+			nextInstructionRead = *((unsigned long*)buffIn); 
 			if (nextInstructionRead != 0) {
 				InstructionChain* nextLink =
 				new InstructionChain(nextInstructionRead);
@@ -167,8 +164,8 @@ void readOPTTree(void *tree, char *path)
 		} while (nextInstructionRead != 0);
 		redblacknode<OPTTreeNode> rbOPTNode(nextPage);
 		optRBTree->insertnode(&rbOPTNode, optRBTree->root);
-		printf("Inserted node for page %li\n", pageNumberRead);
 	}
+	delete[] buffIn;
 }
 
 void removeOPTTree(void* tree)
