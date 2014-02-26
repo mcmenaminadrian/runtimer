@@ -67,8 +67,13 @@ static void XMLCALL
 	} 
 }
 
-void startFirstThread(char* outputprefix)
+int startFirstThread(char* outputprefix)
 {
+	int errL, errG;
+	struct threadLocal *firstThreadLocal;
+	char threadname[BUFFSZ];
+	struct threadResources *firstThreadReosurces;
+	
 	//start the first thread
 	//first task is read the OPT string
 	globalThreadList =
@@ -76,48 +81,80 @@ void startFirstThread(char* outputprefix)
 	if (!globalThreadList) {
 		fprintf(stderr,
 			"Could not allocate memory for threadGlobal.\n");
-		return;
+		goto failed;
 	}
-	struct threadLocal *firstThreadLocal =
+
+	globalThreadList->globalTree = createPageTree();
+	if (!globalThreadList->globalTree) {
+		fprintf(stderr,
+			"Could not create global tree");
+		goto failGlobalTree;
+	}
+
+	firstThreadLocal =
 		(struct threadLocal*)malloc(sizeof(struct threadLocal));
 	if (!firstThreadLocal) {
 		fprintf(stderr,
 			"Could not allocate memory for threadLocal.\n");
-		free(globalThreadList);
-		return;
+		goto failFirstThreadLocal;
 	}
+
 	firstThreadLocal->localTree = createPageTree();
 	if (!firstThreadLocal->localTree) {
 		fprintf(stderr,
 			"Could not initialise local tree.\n");
-		free(firstThreadLocal);
-		free(globalThreadList);
-		return;
+		goto failLocalTree;
 	}
+
 	firstThreadLocal->optTree = createOPTTree();
 	if (!firstThreadLocal->optTree) {
 		fprintf(stderr,
 			"Could not initialise OPT tree.\n");
-		removePageTree(firstThreadLocal->localTree);
-		free(firstThreadLocal);
-		free(globalThreadList);
-		return;
+		goto failOPTTreeCreate;
 	}
+
 	firstThreadLocal->threadNumber = startTR->number;
-	int err = pthread_mutex_init(&firstThreadLocal->threadLocalLock, NULL);
-	if (err) {
-		fprintf(stderr, "Mutex initialisation fails with %i.\n", err);
-		removeOPTTree(firstThreadLocal->optTree);
-		removePageTree(firstThreadLocal->localTree);
-		free(firstThreadLocal);
-		free(globalThreadList);
-		return;
-	}
+
 	globalThreadList->head = firstThreadLocal;
 	globalThreadList->tail = firstThreadLocal;
-	char threadname[BUFFSZ];
 	sprintf(threadname, "%s%i.bin",outputprefix, startTR->number);
 	readOPTTree(firstThreadLocal->optTree, threadname);
+
+	//prepare to start the thread
+	firstThreadResources =
+		(struct threadResources*)malloc(sizeof struct threadResources);
+	if (!firstThreadResources) {
+		fprintf(stderr,
+			"Could not allocate memory for threadResources.\n");
+		goto failResources:
+	}
+	firstThreadResources->records = startTR;
+	firstThreadResources->globals = globalThreadList;
+	firstThreadResources->local = firstThreadLocal;
+	errL = pthread_mutex_init(&firstThreadLocal->threadLocalLock, NULL);
+	errG = pthread_mutex_init(&globalThreadList->threadGlobalLock, NULL);
+	if (errL || errG) {
+		fprintf(stderr,
+			"Mutex initialisation fails with %i and %i.\n",
+			errL, errG);
+		goto failMutex;
+	}
+
+	return 0;
+
+failMutex:
+	free(firstThreadResources);
+failResources:
+failOPTTreeCreate:
+	removePageTree(firstThreadLocal->localTree);
+failLocalTree:
+	free(firstThreadLocal);
+failFirstThreadLocal:
+	removeOPTTree(firstThreadLocal->optTree);
+failGlobalTree:
+	free(globalThreadList);	
+failed:
+	return -1;
 }
 
 
@@ -158,12 +195,16 @@ int main(int argc, char* argv[])
 			printf("ERROR: %s\n", XML_ErrorString(errcde));
 			printf("Error at column number %lu\n", XML_GetCurrentColumnNumber(p_ctrl));
 			printf("Error at line number %lu\n", XML_GetCurrentLineNumber(p_ctrl));
+			exit(-1);
 		}
 	} while(!done);
 
 	XML_ParserFree(p_ctrl);
 	fclose(inXML);
-	startFirstThread(outputprefix); //test code for now
+	if (startFirstThread(outputprefix) < 0) {
+		printf("ERROR: thread parsing failed.\n");
+		exit(-1);
+	}
 	cleanThreadList(startTR);
 	return 0;
 }

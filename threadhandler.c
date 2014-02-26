@@ -8,6 +8,8 @@
 
 void* startThreadHandler(void *resources)
 {
+	struct threadResources thResources;
+	thResources = (struct threadResources*)resources;
 
 	return NULL;
 }

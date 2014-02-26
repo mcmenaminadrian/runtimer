@@ -13,16 +13,17 @@ struct threadRecord
 	int number;
 	char path[BUFFSZ];
 	struct threadRecord *next;
+	pthread_mutex_t lockToAddDeleteRecord;
 };
 
 struct threadLocal
 {
 	int threadNumber;
-	pthread_mutex_t threadLocalLock;
 	void* localTree;
 	void* optTree;
 	struct threadLocal* prev;
 	struct threadLocal* next;
+	pthread_mutex_t threadLocalLock;
 };
 
 struct threadGlobal
@@ -30,13 +31,13 @@ struct threadGlobal
 	int activeThreads;
 	struct threadLocal* head;
 	struct threadLocal* tail;
+	void* globalTree;
+	pthread_mutex_t threadGlobalLock;
 };
 
 struct threadResources
 {
-	int threadNumber;
 	struct threadRecord *records;
-	void* globalTree;
 	struct threadGlobal* globals;
 	struct threadLocal* local;
 };
