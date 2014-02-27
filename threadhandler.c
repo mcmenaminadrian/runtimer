@@ -3,7 +3,9 @@
 #include <expat.h>
 #include <pthread.h>
 #include <time.h>
-
+#include <string.h>
+#include "threadhandler.h"
+#include "pages.h"
 
 //C code that parses a thread
 
@@ -15,15 +17,15 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 	struct threadResources *thResources;
 	struct threadGlobal *globals;
 	struct threadLocal *local;
-	thResources = (struct threadResources *)thResources;
+	thResources = (struct threadResources *)data;
 	globals = thResources->globals;
-	local = thResources->local
+	local = thResources->local;
 	if (strcmp(name, "instruction") == 0 || strcmp(name, "load") == 0 ||
 		strcmp(name, "modify") == 0 || strcmp(name, "store") == 0) {
 		for (i = 0; attr[i]; i += 2) {
 			if (strcmp(attr[i], "address") == 0) {
-				time_t now;
-				address = atol(attr[i+1], 16);
+				time_t now = time(NULL);
+				address = strtol(attr[i+1], NULL, 16);
 				//have address - is it already present?
 				pthread_mutex_lock(&globals->threadGlobalLock);
 				if (locatePageTreePR(address >> BITSHIFT,
@@ -54,12 +56,12 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 						//have to add the page
 						int howMany =
 						countPageTree(
-							globals->GlobalTree);
-						if (nowMany >= CORES * COREMEM)
+							globals->globalTree);
+						if (howMany >= CORES * COREMEM)
 						{
 							replacePage(
 							address >> BITSHIFT,
-							threadResources);
+							thResources);
 							pthread_mutex_unlock(
 							&globals->
 							threadGlobalLock);
@@ -67,7 +69,7 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 							insertIntoPageTree(
 							address >> BITSHIFT,
 							now,
-							globals->GlobalTree);
+							globals->globalTree);
 							pthread_mutex_unlock(
 							&globals->
 							threadGlobalLock);
@@ -87,7 +89,7 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 
 void* startThreadHandler(void *resources)
 {
-	struct threadResources thResources;
+	struct threadResources *thResources;
 	thResources = (struct threadResources*)resources;
 	printf("Setting up parser for thread %i\n",
 		thResources->local->threadNumber);
