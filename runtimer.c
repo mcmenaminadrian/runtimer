@@ -72,7 +72,7 @@ int startFirstThread(char* outputprefix)
 	int errL, errG;
 	struct threadLocal *firstThreadLocal;
 	char threadname[BUFFSZ];
-	struct threadResources *firstThreadReosurces;
+	struct threadResources *firstThreadResources;
 	
 	//start the first thread
 	//first task is read the OPT string
@@ -98,7 +98,8 @@ int startFirstThread(char* outputprefix)
 			"Could not allocate memory for threadLocal.\n");
 		goto failFirstThreadLocal;
 	}
-
+	
+	firstThreadLocal->instructionCount = 0;
 	firstThreadLocal->localTree = createPageTree();
 	if (!firstThreadLocal->localTree) {
 		fprintf(stderr,
@@ -122,11 +123,11 @@ int startFirstThread(char* outputprefix)
 
 	//prepare to start the thread
 	firstThreadResources =
-		(struct threadResources*)malloc(sizeof struct threadResources);
+		(struct threadResources*)malloc(sizeof (struct threadResources));
 	if (!firstThreadResources) {
 		fprintf(stderr,
 			"Could not allocate memory for threadResources.\n");
-		goto failResources:
+		goto failResources;
 	}
 	firstThreadResources->records = startTR;
 	firstThreadResources->globals = globalThreadList;
