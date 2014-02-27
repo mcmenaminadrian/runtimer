@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include "pthread.h"
 #include "redblack.hpp"
 
@@ -7,7 +8,7 @@ using namespace std;
 class PageRecord {
 	protected:
 		long pageNumber;
-		long lruNumber;
+		time_t lruNumber;
 	public:
 		PageRecord(const long pgN, const long lruN);
 		const long getPageNumber(void) const;
@@ -42,7 +43,7 @@ PageRecordTree::PageRecordTree(redblacktree<redblacknode<PageRecord> >* prTree,
 	pthread_mutex_init(&tree_lock, NULL);
 }
 
-PageRecord::PageRecord(const long pgN, const long lruN)
+PageRecord::PageRecord(const long pgN, const time_t lruN)
 {
 	pageNumber = pgN;
 	lruNumber = lruN;
@@ -73,12 +74,12 @@ const long PageRecord::getPageNumber(void) const
 	return pageNumber;
 }
 
-const long PageRecord::getLRUNumber(void) const
+const time_t PageRecord::getLRUNumber(void) const
 {
 	return lruNumber;
 }
 
-void PageRecord::setLRUNumber(const long lruN)
+void PageRecord::setLRUNumber(const time_t lruN)
 {
 	lruNumber = lruN;
 }

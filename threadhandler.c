@@ -2,9 +2,88 @@
 #include <stdlib.h>
 #include <expat.h>
 #include <pthread.h>
+#include <time.h>
 
 
 //C code that parses a thread
+
+static void XMLCALL
+threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
+{
+	int i;
+	long address;
+	struct threadResources *thResources;
+	struct threadGlobal *globals;
+	struct threadLocal *local;
+	thResources = (struct threadResources *)thResources;
+	globals = thResources->globals;
+	local = thResources->local
+	if (strcmp(name, "instruction") == 0 || strcmp(name, "load") == 0 ||
+		strcmp(name, "modify") == 0 || strcmp(name, "store") == 0) {
+		for (i = 0; attr[i]; i += 2) {
+			if (strcmp(attr[i], "address") == 0) {
+				time_t now;
+				address = atol(attr[i+1], 16);
+				//have address - is it already present?
+				pthread_mutex_lock(&globals->threadGlobalLock);
+				if (locatePageTreePR(address >> BITSHIFT,
+						globals->globalTree)) {
+					updateLRU(address >> BITSHIFT,
+						time(&now),
+						globals->globalTree);
+					pthread_mutex_unlock(
+						&globals->threadGlobalLock);
+					if (locatePageTreePR(
+						address >> BITSHIFT,
+						local->localTree)) {
+						updateLRU(
+							address >> BITSHIFT,
+							now, local->localTree);
+					} else {
+						insertIntoPageTree(
+						address >> BITSHIFT,
+						now, local->localTree);
+					}
+					local->instructionCount++;
+				} else {
+					pthread_mutex_unlock(
+						&globals->threadGlobalLock);
+					if (faultPage(address >> BITSHIFT)) {
+						pthread_mutex_lock(
+						&globals->threadGlobalLock);
+						//have to add the page
+						int howMany =
+						countPageTree(
+							globals->GlobalTree);
+						if (nowMany >= CORES * COREMEM)
+						{
+							replacePage(
+							address >> BITSHIFT,
+							threadResources);
+							pthread_mutex_unlock(
+							&globals->
+							threadGlobalLock);
+						} else {
+							insertIntoPageTree(
+							address >> BITSHIFT,
+							now,
+							globals->GlobalTree);
+							pthread_mutex_unlock(
+							&globals->
+							threadGlobalLock);
+							insertIntoPageTree(
+							address >>BITSHIFT,
+							now,
+							local->localTree);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+						
 
 void* startThreadHandler(void *resources)
 {
@@ -21,6 +100,6 @@ void* startThreadHandler(void *resources)
 	//Pass the parser thread specific data
 	XML_SetUserData(p_threadParser, resources);
 	//Start the Parser
-
+	XML_SetStartElementHandler(p_threadParser, threadXMLProcessor);
 	return NULL;
 }

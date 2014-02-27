@@ -19,6 +19,7 @@ struct threadRecord
 struct threadLocal
 {
 	int threadNumber;
+	int instructionCount;
 	void* localTree;
 	void* optTree;
 	struct threadLocal* prev;
