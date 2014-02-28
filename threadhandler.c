@@ -31,7 +31,7 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 				if (locatePageTreePR(address >> BITSHIFT,
 						globals->globalTree)) {
 					updateLRU(address >> BITSHIFT,
-						time(&now),
+						now,
 						globals->globalTree);
 					pthread_mutex_unlock(
 						&globals->threadGlobalLock);
