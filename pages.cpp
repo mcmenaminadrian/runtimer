@@ -279,6 +279,7 @@ long getNextPageNumber(void** node)
 	}
 	prNode = static_cast<reblacknode<PageRecord> *>(*node);
 	getNextPageNumber(static_cast<void *>(&prNode->left));
+	getNextPageNumber(static_cast<void *>(&prNode->right));
 	return prNode->getValue().getPageNumber();
 }
 	
