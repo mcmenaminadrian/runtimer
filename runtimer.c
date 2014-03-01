@@ -27,9 +27,9 @@ struct threadRecord*
 		newThread->next = NULL;
 		newThread->local = NULL;
 		*root = newThread;
-		return root;
+		return *root;
 	} else 
-		return mapThread(&root->next, tNum, fileName);
+		return mapThread(&((*root)->next), tNum, fileName);
 }
 
 void cleanThreadList(struct threadRecord *root)
