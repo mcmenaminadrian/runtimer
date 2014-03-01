@@ -168,6 +168,36 @@ void readOPTTree(void *tree, char *path)
 	delete[] buffIn;
 }
 
+long findNextInstruction(long currentInstruction, InstructionChain* chain)
+{
+	if (chain == NULL) {
+		return 0;
+	}
+	else {
+		if (chain->getInstruction() < currentInstruction) {
+			return findNextInstruction(currentInstruction,
+				chain->getNext())
+		} else {
+			return chain->getInstruction();
+	}
+}
+
+
+long nextInChain(long pageNumber, long instructionCount, void* tree)
+{
+	redblacktree<redblackmode<OPTTreeNode> >* optTree;
+	redblacknode<OPTTreeNode> findNode(pageNumber);
+	optTree = static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
+	//find the node with the pageNumber
+	redblacknode<OPTTreeNode>* found = optTree->locateNode(&findNode,
+		optTree->root)
+	if (!found)
+		return -1;
+	OPTTreeNode v = founf->getValue();
+	InstructionChain *vChain = v->getHead(); 	
+	return findNextInstruction(instructionCount, InstructionChain* chain);
+}	
+
 void removeOPTTree(void* tree)
 {
 	redblacktree<redblacknode<OPTTreeNode> >* optTree;

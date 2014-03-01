@@ -261,4 +261,29 @@ void updateLRU(long pageNumber, long lruTime, void* tree)
 	insertIntoPageTree(pageNumber, lruTime, tree);
 }
 
+void* getRootPageTree(void* tree)
+{
+	PageRecordTree *prTree;
+	redblacknode<PageRecord> *rootNode;
+	prTree = static_cast<PageRecordTree *>(tree);
+	rootNode = prTree->PageRecordTree->root;
+	return static_cast<void *> rootNode;
+}
+
+long getNextPageNumber(void** node)
+{
+	redblacknode<PageRecord> *prNode;
+
+	if (*node = NULL) {
+		return 0;
+	}
+	prNode = static_cast<reblacknode<PageRecord> *>(*node);
+	getNextPageNumber(static_cast<void *>(&prNode->left));
+	return prNode->getValue().getPageNumber();
+}
+	
+
+
+	
+
 }// end extern "C"		
