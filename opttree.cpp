@@ -128,6 +128,17 @@ void cleanOPTTree(redblacknode<OPTTreeNode>* node)
 	delete node->getvalue().getHead();
 }
 
+struct pair *pairChainInOrder(struct pair *chain,
+	<redblacknode<OPTTreeNode>* node)
+{
+	if (node == NULL) {
+		return chain;
+	}
+	pairChainInOrder(chain, node);
+	if (chain == NULL) {
+		chain = (struct pair*)(malloc(sizeof(struct pair)));
+		chain->instruction = 
+
 extern "C" {
 
 void* createOPTTree(void)
@@ -196,7 +207,14 @@ long nextInChain(long pageNumber, long instructionCount, void* tree)
 	OPTTreeNode v = founf->getValue();
 	InstructionChain *vChain = v->getHead(); 	
 	return findNextInstruction(instructionCount, InstructionChain* chain);
-}	
+}
+
+struct *pair getPairChain(void *tree)
+{
+	redblacktree<redblacknode<OPTTreeNode> >* optTree;
+	optTree = static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
+	return pairChainInOrder(NULL, optTree->root);
+}
 
 void removeOPTTree(void* tree)
 {
