@@ -270,21 +270,4 @@ void* getRootPageTree(void* tree)
 	return static_cast<void *> rootNode;
 }
 
-long getNextPageNumber(void** node)
-{
-	redblacknode<PageRecord> *prNode;
-
-	if (*node = NULL) {
-		return 0;
-	}
-	prNode = static_cast<reblacknode<PageRecord> *>(*node);
-	getNextPageNumber(static_cast<void *>(&prNode->left));
-	getNextPageNumber(static_cast<void *>(&prNode->right));
-	return prNode->getValue().getPageNumber();
-}
-	
-
-
-	
-
 }// end extern "C"		
