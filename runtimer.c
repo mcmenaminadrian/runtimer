@@ -12,19 +12,24 @@ static char outputprefix[BUFFSZ];
 static struct threadGlobal *globalThreadList = NULL;
 
 struct threadRecord*
-	mapThread(struct threadRecord *root, int tNum, char *fileName)
+	mapThread(struct threadRecord **root, int tNum, char *fileName)
 {
-	if (root == NULL) {
+	if (*root == NULL) {
 		struct threadRecord *newThread =
 			(struct threadRecord*)
 				malloc( sizeof (struct threadRecord));
+		if (!newThread) {
+			fprintf(stderr, "Could not create threadRecord.\n");
+			return NULL;
+		}
 		newThread->number = tNum;
 		strcpy(newThread->path, fileName);
 		newThread->next = NULL;
-		root = newThread;
+		newThread->local = NULL;
+		*root = newThread;
 		return root;
 	} else 
-		return mapThread(root->next, tNum, fileName);
+		return mapThread(&root->next, tNum, fileName);
 }
 
 void cleanThreadList(struct threadRecord *root)
@@ -60,8 +65,10 @@ static void XMLCALL
 				break;
 			}
 		}
-		struct threadRecord* endRecord = mapThread(startTR, threadID,
+		struct threadRecord* endRecord = mapThread(&startTR, threadID,
 			threadPath);
+		if (endRecord == NULL)
+			return;
 		if (startTR == NULL)
 			startTR = endRecord;
 	} 
@@ -98,7 +105,9 @@ int startFirstThread(char* outputprefix)
 			"Could not allocate memory for threadLocal.\n");
 		goto failFirstThreadLocal;
 	}
-	
+	startTR->local = firstThreadLocal;
+	firstThreadLocal->prev = NULL;
+	firstThreadLocal->next = NULL;	
 	firstThreadLocal->instructionCount = 0;
 	firstThreadLocal->localTree = createPageTree();
 	if (!firstThreadLocal->localTree) {
@@ -155,6 +164,7 @@ failFirstThreadLocal:
 failGlobalTree:
 	free(globalThreadList);	
 failed:
+	free(startTR);
 	return -1;
 }
 

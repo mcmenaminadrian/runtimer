@@ -9,6 +9,21 @@
 
 //C code that parses a thread
 
+static int faultPage(long pageNumber, struct threadResources *thResources)
+{
+	int countDown = 100 * MEMWIDTH;
+	while (countDown) {		
+		if (locatePageTreePR(pageNumber,
+			thResources->globals->globalTree)) {
+			return 0;
+		}
+		thResources->local->instructionCount++;
+		countDown--;
+	}
+	thResources->local->faultCount++;
+	return 1;
+}
+
 static void XMLCALL
 threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 {
@@ -49,34 +64,31 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 					local->instructionCount++;
 				} else {
 					pthread_mutex_unlock(
-						&globals->threadGlobalLock);
-					if (faultPage(address >> BITSHIFT)) {
+					&globals->threadGlobalLock);
+					if (faultPage(address >> BITSHIFT,
+						thResources)) {
 						pthread_mutex_lock(
 						&globals->threadGlobalLock);
 						//have to add the page
-						int howMany =
-						countPageTree(
+						int howMany = countPageTree(
 							globals->globalTree);
 						if (howMany >= CORES * COREMEM)
 						{
-							replacePage(
+						replacePage(
 							address >> BITSHIFT,
 							thResources);
-							pthread_mutex_unlock(
-							&globals->
+						pthread_mutex_unlock(&globals->
 							threadGlobalLock);
 						} else {
-							insertIntoPageTree(
+						insertIntoPageTree(
 							address >> BITSHIFT,
 							now,
 							globals->globalTree);
-							pthread_mutex_unlock(
-							&globals->
+						pthread_mutex_unlock(&globals->
 							threadGlobalLock);
-							insertIntoPageTree(
+						insertIntoPageTree(
 							address >>BITSHIFT,
-							now,
-							local->localTree);
+							now, local->localTree);
 						}
 					}
 				}

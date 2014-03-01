@@ -5,6 +5,7 @@
 #define BITSHIFT 12
 #define CORES 16
 #define COREMEM 32
+#define MEMWIDTH 16
 
 struct threadLocal;
 
@@ -12,6 +13,7 @@ struct threadRecord
 {
 	int number;
 	char path[BUFFSZ];
+	struct threadLocal *local;
 	struct threadRecord *next;
 	pthread_mutex_t lockToAddDeleteRecord;
 };
@@ -19,11 +21,14 @@ struct threadRecord
 struct threadLocal
 {
 	int threadNumber;
-	int instructionCount;
+	long instructionCount;
+	long faultCount;
+	long prevInstructionCount;
+	long prevFaultCount;
 	void* localTree;
 	void* optTree;
-	struct threadLocal* prev;
-	struct threadLocal* next;
+	struct threadLocal *prev;
+	struct threadLocal *next;
 	pthread_mutex_t threadLocalLock;
 };
 
