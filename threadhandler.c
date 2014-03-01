@@ -9,6 +9,18 @@
 
 //C code that parses a thread
 
+struct pageToReplace{
+	long pageNumber;
+	long instructionCount;
+}
+
+static void replacePage(long pageNumber, struct threadResources *thResources)
+{
+	//find the page with the longest reuse distance,
+	//otherwise find the page with the oldest date
+	//either for this thread or all threads
+		 
+
 static int faultPage(long pageNumber, struct threadResources *thResources)
 {
 	int countDown = 100 * MEMWIDTH;
