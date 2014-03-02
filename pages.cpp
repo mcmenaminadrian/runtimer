@@ -270,4 +270,23 @@ void* getRootPageTree(void* tree)
 	return static_cast<void *> rootNode;
 }
 
+struct pair* getInstructionPagePair(void *tree)
+{
+	PageRecordTree *prTree;
+	struct pair* activePair = NULL;
+	prTree = static_cast<PageRecordTree *>(tree);
+	return buildInstructionPair(&activePair, prTree->pageRecordTree->root);
+	
+}
+
+void cleanPair(struct pair* inPair)
+{
+	if (inPair == NULL){
+		return;
+	}
+	struct pair* nextPair = inPair->next;
+	delete inPair;
+	cleanPair(nextPair);
+}
+
 }// end extern "C"		
