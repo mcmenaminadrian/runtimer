@@ -128,17 +128,6 @@ void cleanOPTTree(redblacknode<OPTTreeNode>* node)
 	delete node->getvalue().getHead();
 }
 
-struct pair *pairChainInOrder(struct pair *chain,
-	<redblacknode<OPTTreeNode>* node)
-{
-	if (node == NULL) {
-		return chain;
-	}
-	pairChainInOrder(chain, node);
-	if (chain == NULL) {
-		chain = (struct pair*)(malloc(sizeof(struct pair)));
-		chain->instruction = 
-
 extern "C" {
 
 void* createOPTTree(void)
@@ -183,30 +172,31 @@ long findNextInstruction(long currentInstruction, InstructionChain* chain)
 {
 	if (chain == NULL) {
 		return LONG_MAX;
-	}
-	else {
+	} else {
 		if (chain->getInstruction() < currentInstruction) {
 			return findNextInstruction(currentInstruction,
-				chain->getNext())
+				chain->getNext());
 		} else {
 			return chain->getInstruction();
+		}
 	}
 }
 
 
 long nextInChain(long pageNumber, long instructionCount, void* tree)
 {
-	redblacktree<redblackmode<OPTTreeNode> >* optTree;
-	redblacknode<OPTTreeNode> findNode(pageNumber);
+	redblacktree<redblacknode<OPTTreeNode> >* optTree;
+	OPTTreeNode findOPT(pageNumber);
+	redblacknode<OPTTreeNode> findNode(findOPT);
 	optTree = static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
 	//find the node with the pageNumber
-	redblacknode<OPTTreeNode>* found = optTree->locateNode(&findNode,
-		optTree->root)
+	redblacknode<OPTTreeNode>* found = optTree->locatenode(&findNode,
+		optTree->root);
 	if (!found)
 		return -1;
-	OPTTreeNode v = found->getValue();
-	InstructionChain *vChain = v->getHead(); 	
-	return findNextInstruction(instructionCount, InstructionChain* chain);
+	OPTTreeNode v = found->getvalue();
+	InstructionChain *vChain = v.getHead(); 	
+	return findNextInstruction(instructionCount, vChain);
 }
 
 void removeOPTTree(void* tree)

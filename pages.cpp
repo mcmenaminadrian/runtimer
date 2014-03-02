@@ -2,6 +2,7 @@
 #include <ctime>
 #include "pthread.h"
 #include "redblack.hpp"
+#include "threadhandler.h"
 
 using namespace std;
 
@@ -134,25 +135,25 @@ redblacknode<PageRecordLRU>* locateLRU(long pageNumber, void* tree)
 }
 
 void 
-buildInstructionPair(struct PageChain** headChain,
+buildPageChain(struct PageChain** headChain,
 	struct PageChain** activeChain, redblacknode<PageRecord>* node)
 {
 	if (node == NULL) {
 		return;
 	}
-	buildInstructionPair(headChain, activeChain, node->left);
-	nextChain =
+	buildPageChain(headChain, activeChain, node->left);
+	struct PageChain *nextChain =
 		(struct PageChain*)malloc(sizeof(struct PageChain));
 	nextChain->next = NULL;
-	nextChain->page = node.getValue().page;
+	nextChain->page = node->getvalue().getPageNumber();
 	if (*activeChain == NULL) {
 		*activeChain = nextChain;
 		*headChain = *activeChain;
 	} else {
-		*activeChain->next = nextChain;
+		(*activeChain)->next = nextChain;
 		*activeChain = nextChain;
 	}
-	buildInstructionPair(headChain, activeChain, node->right);
+	buildPageChain(headChain, activeChain, node->right);
 }
 
 extern "C" {
@@ -283,22 +284,13 @@ void updateLRU(long pageNumber, long lruTime, void* tree)
 	insertIntoPageTree(pageNumber, lruTime, tree);
 }
 
-void* getRootPageTree(void* tree)
-{
-	PageRecordTree *prTree;
-	redblacknode<PageRecord> *rootNode;
-	prTree = static_cast<PageRecordTree *>(tree);
-	rootNode = prTree->PageRecordTree->root;
-	return static_cast<void *> rootNode;
-}
-
 struct PageChain* getPageChain(void *tree)
 {
 	PageRecordTree *prTree;
 	struct PageChain* activeChain = NULL;
 	struct PageChain* headChain = NULL;
 	prTree = static_cast<PageRecordTree *>(tree);
-	buildInstructionPair(&headChain, &activeChain,
+	buildPageChain(&headChain, &activeChain,
 		prTree->pageRecordTree->root);
 	return activeChain;
 }
