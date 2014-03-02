@@ -1,7 +1,11 @@
 all: runtimer 
 
-runtimer: runtimer.o rbpages.o opttree.o threadhandler.o
-	g++ -O2 -o runtimer -Wall rbpages.o opttree.o threadhandler.o runtimer.o -lexpat -lpthread
+runtimer: runtimer.o insttree.o rbpages.o opttree.o threadhandler.o
+	g++ -O2 -o runtimer -Wall insttree.o rbpages.o opttree.o \
+		threadhandler.o runtimer.o -lexpat -lpthread
+
+insttree.o: insttree.cpp insttree.h
+	g++ -O2 -o insttree.o -c -Wall insttree.cpp
 
 threadhandler.o: threadhandler.c threadhandler.h
 	gcc -O2 -o threadhandler.o -c -Wall threadhandler.c

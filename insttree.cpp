@@ -5,37 +5,32 @@ using namespace std;
 
 //build a tree ordered by next instruction
 
-class instructionOrder
+class InstructionOrder
 {
 	private:
-	const unsigned long instruction;
-	const long pageNumber;
+	unsigned long instruction;
+	long pageNumber;
 
 	public:
-	InstructionOrder(const unsigned long i, const long p);
+	InstructionOrder
+	(const unsigned long i, const long p):instruction(i), pageNumber(p){};
 	bool operator==(InstructionOrder&) const;
 	bool operator<(InstructionOrder&) const;
-	const unsigned long getInstruction() const;
-	const long getPageNumber() const;
+	const unsigned long getInstruction(void) const;
+	const long getPageNumber(void) const;
 };
-
-InstructionOrder::InstructionOrder(const unsigned long i, const long p)
-{
-	instruction = i;
-	pageNumber = p;
-}
 
 bool InstructionOrder::operator==(InstructionOrder& iO) const
 {
-	return (instruction == io.instruction);
+	return (instruction == iO.instruction);
 }
 
 bool InstructionOrder::operator<(InstructionOrder& iO) const
 {
-	return (pageNumber < io.pageNumber);
+	return (pageNumber < iO.pageNumber);
 }
 
-const unsigned long InstructionOrder::getInstruction const
+const unsigned long InstructionOrder::getInstruction(void) const
 {
 	return instruction;
 }
@@ -51,15 +46,14 @@ void* createInstructionTree(void)
 {
 	redblacktree<redblacknode<InstructionOrder> >* instTree;
 	instTree = new redblacktree<redblacknode<InstructionOrder> >();
-	return static_cast<void *> instTree;
+	return static_cast<void *>(instTree);
 }
 
 void insertIntoTree(long pageNumber, unsigned long instruction, void* tree)
 {
 	redblacktree<redblacknode<InstructionOrder> >* instTree;
 	instTree =
-		static_cast<redblacktree<redblacknode<InstructionOrder>* >
-		(tree);
+	static_cast<redblacktree<redblacknode<InstructionOrder> >*>(tree);
 	InstructionOrder instOrder(instruction, pageNumber);
 	redblacknode<InstructionOrder> instOrderNode(instOrder);
 	instTree->insertnode(&instOrderNode, instTree->root);
@@ -70,16 +64,16 @@ long maxNode(void* tree)
 	redblacktree<redblacknode<InstructionOrder> >* instTree;
 	redblacknode<InstructionOrder> *farNode;
 	instTree =
-		static_cast<redblacktree<redblacknode<InstructionOrder>* >
-		(tree);
+	static_cast<redblacktree<redblacknode<InstructionOrder> >*>(tree);
 	farNode = instTree->max();
 	//allow repeated calls of maxNode
 	if (farNode) {
-		InstructionOrder iO = farNode->getValue();
-		redblacknode<instructionOrder>
-			delNode(iO->getInstruction(), iO->getPageNumber());
+		InstructionOrder iO = farNode->getvalue();
+		InstructionOrder delIO(iO.getInstruction(),
+			iO.getPageNumber());
+		redblacknode<InstructionOrder> delNode(delIO);
 		instTree->removenode(delNode);
-		return iO->getPageNumber();
+		return iO.getPageNumber();
 	} else {
 		return 0;
 	}
@@ -89,7 +83,7 @@ void freeInstTree(void* tree)
 {
 	redblacktree<redblacknode<InstructionOrder> >* instTree;
 	instTree =
-		static_cast<redblacktree<redblacknode<InstructionOrder>* >
+		static_cast<redblacktree<redblacknode<InstructionOrder> >*>
 		(tree);
 	delete instTree;
 }
