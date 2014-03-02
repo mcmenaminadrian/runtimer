@@ -54,6 +54,7 @@ struct PageChain {
 };
 
 
+void* startThreadHandler(void *resources);
 
 #endif
 
