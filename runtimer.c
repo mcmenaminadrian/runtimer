@@ -149,7 +149,10 @@ int startFirstThread(char* outputprefix)
 			errL, errG);
 		goto failMutex;
 	}
-
+	pthread_t firstHandlerThread;
+	pthread_create(&firstHandlerThread, NULL, startThreadHandler,
+		(void *)firstThreadResources);
+	pthread_join(firstHandlerThread, NULL);
 	return 0;
 
 failMutex:

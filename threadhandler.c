@@ -81,7 +81,7 @@ static int faultPage(long pageNumber, struct ThreadResources *thResources)
 
 static void XMLCALL
 threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
-{
+{ printf("HERE>>>>");
 	int i;
 	long address;
 	struct ThreadResources *thResources;
@@ -200,7 +200,7 @@ void* startThreadHandler(void *resources)
 
 cleanup:
 	free(thResources->records);
-	removeOPTTree(thResouces->local->optTree);
+	removeOPTTree(thResources->local->optTree);
 	removePageTree(thResources->local->localTree);
 	removePageTree(thResources->globals->globalTree);
 	free(thResources->globals);
