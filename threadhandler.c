@@ -10,22 +10,64 @@
 
 //C code that parses a thread
 
-struct pageToReplace{
+struct PageToReplace{
 	long pageNumber;
 	long instructionCount;
-}
+};
 
 static void replacePage(long pageNumber, struct ThreadResources *thResources)
 {
 	//find the page with the longest reuse distance,
 	//otherwise find the page with the oldest date
 	//either for this thread or all threads
-	struct PageChain *currentChain = getPageChain(thResources->localTree);
-	
-	
-		 
+	struct PageChain *currentChain = getPageChain(thResources->localTree);	
+	void* instructionTree = createInstructionTree()
+	while (currentChain) {
+		long instructionNext =
+			nextInChain(currentChain->page,
+			thResources->local->instructionCount,
+			thResources->optTree);
+		if (instructionNext == -1) {
+			fprintf(stderr,
+			"ERROR: Page %li in localTree but not in optTree",
+			currentChain->page);
+		} else {
+			insertIntoTree(currentChain->page, instructionNext,
+				instructionTree);
+		}
+		currentChain = currentChain->next;
+	}
+	//now get the maximum
+	do {
+		int pageFound = 0;
+		long maximumReuse = maxNode(instructionTree);
+		if (maximumReuse) {
+			//lock the global tree hard
+			pthread_mutex_lock(
+				&thResources->globals->threadGlobalLock);
+			if (localPageTreePR(maximumReuse,
+				thResources->globals->globalTree)) {
+				pageFound = 1;
+				removeFromPageTree(maximumReuse,
+					thResources->globals->globalTree);
+			}
+			pthread_mutex_unlock(
+				&thResources->globals->threadGlobalLock);
+		} else {
+			break;
+		}
+	} while (pageFound == 0);
 
-static int faultPage(long pageNumber, struct threadResources *thResources)
+	//if we didn't find the page, kill the oldest page
+	if (pageFound == 0) {
+		pthread_mutex_lock(&thResources->globals->threadGlobalLock);
+		removeOldestFromPageTree(thResources->globals->globalTree);
+		pThread_mutex_unlock(&thResources->globals->threadGlobalLock);
+	}
+	freeInstTree(instructionTree);
+}
+		
+static int faultPage(long pageNumber, struct ThreadResources *thResources)
 {
 	int countDown = 100 * MEMWIDTH;
 	while (countDown) {		
@@ -45,10 +87,10 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 {
 	int i;
 	long address;
-	struct threadResources *thResources;
-	struct threadGlobal *globals;
-	struct threadLocal *local;
-	thResources = (struct threadResources *)data;
+	struct ThreadResources *thResources;
+	struct ThreadGlobal *globals;
+	struct ThreadLocal *local;
+	thResources = (struct ThreadResources *)data;
 	globals = thResources->globals;
 	local = thResources->local;
 	if (strcmp(name, "instruction") == 0 || strcmp(name, "load") == 0 ||
@@ -117,7 +159,7 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 
 void* startThreadHandler(void *resources)
 {
-	struct threadResources *thResources;
+	struct ThreadResources *thResources;
 	thResources = (struct threadResources*)resources;
 	printf("Setting up parser for thread %i\n",
 		thResources->local->threadNumber);

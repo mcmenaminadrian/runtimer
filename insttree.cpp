@@ -84,6 +84,15 @@ long maxNode(void* tree)
 		return 0;
 	}
 }
+
+void freeInstTree(void* tree)
+{
+	redblacktree<redblacknode<InstructionOrder> >* instTree;
+	instTree =
+		static_cast<redblacktree<redblacknode<InstructionOrder>* >
+		(tree);
+	delete instTree;
+}
 		
 };  //end extern "C"		
 
