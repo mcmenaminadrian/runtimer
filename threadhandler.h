@@ -7,18 +7,18 @@
 #define COREMEM 32
 #define MEMWIDTH 16
 
-struct threadLocal;
+struct ThreadLocal;
 
-struct threadRecord
+struct ThreadRecord
 {
 	int number;
 	char path[BUFFSZ];
-	struct threadLocal *local;
-	struct threadRecord *next;
+	struct ThreadLocal *local;
+	struct ThreadRecord *next;
 	pthread_mutex_t lockToAddDeleteRecord;
 };
 
-struct threadLocal
+struct ThreadLocal
 {
 	int threadNumber;
 	long instructionCount;
@@ -27,26 +27,32 @@ struct threadLocal
 	long prevFaultCount;
 	void* localTree;
 	void* optTree;
-	struct threadLocal *prev;
-	struct threadLocal *next;
+	struct ThreadLocal *prev;
+	struct ThreadLocal *next;
 	pthread_mutex_t threadLocalLock;
 };
 
-struct threadGlobal
+struct ThreadGlobal
 {
 	int activeThreads;
-	struct threadLocal* head;
-	struct threadLocal* tail;
+	struct ThreadLocal* head;
+	struct ThreadLocal* tail;
 	void* globalTree;
 	pthread_mutex_t threadGlobalLock;
 };
 
-struct threadResources
+struct ThreadResources
 {
-	struct threadRecord *records;
-	struct threadGlobal* globals;
-	struct threadLocal* local;
+	struct ThreadRecord *records;
+	struct ThreadGlobal* globals;
+	struct ThreadLocal* local;
 };
+
+struct PageChain {
+	long page;
+	struct PageChain *next;
+};
+
 
 
 #endif

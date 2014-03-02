@@ -204,16 +204,9 @@ long nextInChain(long pageNumber, long instructionCount, void* tree)
 		optTree->root)
 	if (!found)
 		return -1;
-	OPTTreeNode v = founf->getValue();
+	OPTTreeNode v = found->getValue();
 	InstructionChain *vChain = v->getHead(); 	
 	return findNextInstruction(instructionCount, InstructionChain* chain);
-}
-
-struct *pair getPairChain(void *tree)
-{
-	redblacktree<redblacknode<OPTTreeNode> >* optTree;
-	optTree = static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
-	return pairChainInOrder(NULL, optTree->root);
 }
 
 void removeOPTTree(void* tree)

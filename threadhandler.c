@@ -6,6 +6,7 @@
 #include <string.h>
 #include "threadhandler.h"
 #include "pages.h"
+#include "insttree.h"
 
 //C code that parses a thread
 
@@ -14,11 +15,14 @@ struct pageToReplace{
 	long instructionCount;
 }
 
-static void replacePage(long pageNumber, struct threadResources *thResources)
+static void replacePage(long pageNumber, struct ThreadResources *thResources)
 {
 	//find the page with the longest reuse distance,
 	//otherwise find the page with the oldest date
 	//either for this thread or all threads
+	struct PageChain *currentChain = getPageChain(thResources->localTree);
+	
+	
 		 
 
 static int faultPage(long pageNumber, struct threadResources *thResources)

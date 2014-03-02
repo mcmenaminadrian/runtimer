@@ -133,6 +133,28 @@ redblacknode<PageRecordLRU>* locateLRU(long pageNumber, void* tree)
 	return lruNode;
 }
 
+void 
+buildInstructionPair(struct PageChain** headChain,
+	struct PageChain** activeChain, redblacknode<PageRecord>* node)
+{
+	if (node == NULL) {
+		return;
+	}
+	buildInstructionPair(headChain, activeChain, node->left);
+	nextChain =
+		(struct PageChain*)malloc(sizeof(struct PageChain));
+	nextChain->next = NULL;
+	nextChain->page = node.getValue().page;
+	if (*activeChain == NULL) {
+		*activeChain = nextChain;
+		*headChain = *activeChain;
+	} else {
+		*activeChain->next = nextChain;
+		*activeChain = nextChain;
+	}
+	buildInstructionPair(headChain, activeChain, node->right);
+}
+
 extern "C" {
 
 void* createPageTree(void)
@@ -270,23 +292,25 @@ void* getRootPageTree(void* tree)
 	return static_cast<void *> rootNode;
 }
 
-struct pair* getInstructionPagePair(void *tree)
+struct PageChain* getPageChain(void *tree)
 {
 	PageRecordTree *prTree;
-	struct pair* activePair = NULL;
+	struct PageChain* activeChain = NULL;
+	struct PageChain* headChain = NULL;
 	prTree = static_cast<PageRecordTree *>(tree);
-	return buildInstructionPair(&activePair, prTree->pageRecordTree->root);
-	
+	buildInstructionPair(&headChain, &activeChain,
+		prTree->pageRecordTree->root);
+	return activeChain;
 }
 
-void cleanPair(struct pair* inPair)
+void cleanPageChain(struct PageChain* inChain)
 {
-	if (inPair == NULL){
+	if (inChain == NULL){
 		return;
 	}
-	struct pair* nextPair = inPair->next;
-	delete inPair;
-	cleanPair(nextPair);
+	struct PageChain* nextChain = inChain->next;
+	delete inChain;
+	cleanPageChain(nextChain);
 }
 
 }// end extern "C"		
