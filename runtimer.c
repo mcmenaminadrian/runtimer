@@ -7,17 +7,17 @@
 #include "threadhandler.h"
 #include "opttree.h"
 
-static struct threadRecord *startTR = NULL;
+static struct ThreadRecord *startTR = NULL;
 static char outputprefix[BUFFSZ];
-static struct threadGlobal *globalThreadList = NULL;
+static struct ThreadGlobal *globalThreadList = NULL;
 
-struct threadRecord*
-	mapThread(struct threadRecord **root, int tNum, char *fileName)
+struct ThreadRecord*
+	mapThread(struct ThreadRecord **root, int tNum, char *fileName)
 {
 	if (*root == NULL) {
-		struct threadRecord *newThread =
-			(struct threadRecord*)
-				malloc( sizeof (struct threadRecord));
+		struct ThreadRecord *newThread =
+			(struct ThreadRecord*)
+				malloc( sizeof (struct ThreadRecord));
 		if (!newThread) {
 			fprintf(stderr, "Could not create threadRecord.\n");
 			return NULL;
@@ -32,11 +32,11 @@ struct threadRecord*
 		return mapThread(&(*root)->next, tNum, fileName);
 }
 
-void cleanThreadList(struct threadRecord *root)
+void cleanThreadList(struct ThreadRecord *root)
 {
 	if (root == NULL)
 		return;
-	struct threadRecord *nextOne = root->next;
+	struct ThreadRecord *nextOne = root->next;
 	free(root);
 	cleanThreadList(nextOne);
 }
@@ -65,7 +65,7 @@ static void XMLCALL
 				break;
 			}
 		}
-		struct threadRecord* endRecord = mapThread(&startTR, threadID,
+		struct ThreadRecord* endRecord = mapThread(&startTR, threadID,
 			threadPath);
 		if (endRecord == NULL)
 			return;
@@ -77,14 +77,14 @@ static void XMLCALL
 int startFirstThread(char* outputprefix)
 {
 	int errL, errG;
-	struct threadLocal *firstThreadLocal;
+	struct ThreadLocal *firstThreadLocal;
 	char threadname[BUFFSZ];
-	struct threadResources *firstThreadResources;
+	struct ThreadResources *firstThreadResources;
 	
 	//start the first thread
 	//first task is read the OPT string
 	globalThreadList =
-		(struct threadGlobal*)malloc(sizeof (struct threadGlobal));
+		(struct ThreadGlobal*)malloc(sizeof (struct ThreadGlobal));
 	if (!globalThreadList) {
 		fprintf(stderr,
 			"Could not allocate memory for threadGlobal.\n");
@@ -99,7 +99,7 @@ int startFirstThread(char* outputprefix)
 	}
 
 	firstThreadLocal =
-		(struct threadLocal*)malloc(sizeof(struct threadLocal));
+		(struct ThreadLocal*)malloc(sizeof(struct ThreadLocal));
 	if (!firstThreadLocal) {
 		fprintf(stderr,
 			"Could not allocate memory for threadLocal.\n");
@@ -132,7 +132,7 @@ int startFirstThread(char* outputprefix)
 
 	//prepare to start the thread
 	firstThreadResources =
-		(struct threadResources*)malloc(sizeof (struct threadResources));
+		(struct ThreadResources*)malloc(sizeof (struct ThreadResources));
 	if (!firstThreadResources) {
 		fprintf(stderr,
 			"Could not allocate memory for threadResources.\n");
