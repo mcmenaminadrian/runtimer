@@ -7,26 +7,23 @@
 #include "threadhandler.h"
 #include "pages.h"
 #include "insttree.h"
+#include "opttree.h"
 
 //C code that parses a thread
-
-struct PageToReplace{
-	long pageNumber;
-	long instructionCount;
-};
 
 static void replacePage(long pageNumber, struct ThreadResources *thResources)
 {
 	//find the page with the longest reuse distance,
 	//otherwise find the page with the oldest date
 	//either for this thread or all threads
-	struct PageChain *currentChain = getPageChain(thResources->localTree);	
-	void* instructionTree = createInstructionTree()
+	struct PageChain *currentChain =
+		getPageChain(thResources->local->localTree);	
+	void* instructionTree = createInstructionTree();
 	while (currentChain) {
 		long instructionNext =
 			nextInChain(currentChain->page,
 			thResources->local->instructionCount,
-			thResources->optTree);
+			thResources->local->optTree);
 		if (instructionNext == -1) {
 			fprintf(stderr,
 			"ERROR: Page %li in localTree but not in optTree",
@@ -38,14 +35,14 @@ static void replacePage(long pageNumber, struct ThreadResources *thResources)
 		currentChain = currentChain->next;
 	}
 	//now get the maximum
+	int pageFound = 0;
 	do {
-		int pageFound = 0;
 		long maximumReuse = maxNode(instructionTree);
 		if (maximumReuse) {
 			//lock the global tree hard
 			pthread_mutex_lock(
 				&thResources->globals->threadGlobalLock);
-			if (localPageTreePR(maximumReuse,
+			if (locatePageTreePR(maximumReuse,
 				thResources->globals->globalTree)) {
 				pageFound = 1;
 				removeFromPageTree(maximumReuse,
@@ -62,7 +59,7 @@ static void replacePage(long pageNumber, struct ThreadResources *thResources)
 	if (pageFound == 0) {
 		pthread_mutex_lock(&thResources->globals->threadGlobalLock);
 		removeOldestFromPageTree(thResources->globals->globalTree);
-		pThread_mutex_unlock(&thResources->globals->threadGlobalLock);
+		pthread_mutex_unlock(&thResources->globals->threadGlobalLock);
 	}
 	freeInstTree(instructionTree);
 }
@@ -160,7 +157,7 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 void* startThreadHandler(void *resources)
 {
 	struct ThreadResources *thResources;
-	thResources = (struct threadResources*)resources;
+	thResources = (struct ThreadResources*)resources;
 	printf("Setting up parser for thread %i\n",
 		thResources->local->threadNumber);
 	//Setup the Parser
