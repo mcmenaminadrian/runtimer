@@ -156,6 +156,11 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 
 void* startThreadHandler(void *resources)
 {
+	FILE* inThreadXML;
+	size_t len = 0;
+	int done;
+	char data[BUFFSZ];
+
 	struct ThreadResources *thResources;
 	thResources = (struct ThreadResources*)resources;
 	printf("Setting up parser for thread %i\n",
@@ -170,5 +175,36 @@ void* startThreadHandler(void *resources)
 	XML_SetUserData(p_threadParser, resources);
 	//Start the Parser
 	XML_SetStartElementHandler(p_threadParser, threadXMLProcessor);
+	inThreadXML = fopen(thResources->records->path, "r");
+	if (inThreadXML == NULL) {
+		fprintf(stderr, "Could not open %s\n",
+			thResources->records->path);
+		XML_ParserFree(p_threadParser);
+		goto cleanup;
+	}
+
+	do {
+		len = fread(data, 1, sizeof(data), inThreadXML);
+		done = len < sizeof(data);
+		
+		if (XML_Parse(p_threadParser, data, len, 0) == 0) {
+			enum XML_Error errcde = XML_GetErrorCode(p_threadParser);
+			printf("PARSE ERROR: %s\n", XML_ErrorString(errcde));
+			printf("Error at column number %lu\n",
+				XML_GetCurrentColumnNumber(p_threadParser));
+			printf("Error at line number %lu\n",
+				XML_GetCurrentLineNumber(p_threadParser));
+			goto cleanup;
+		}
+	} while(!done);
+
+cleanup:
+	free(thResources->records);
+	removeOPTTree(thResouces->local->optTree);
+	removePageTree(thResources->local->localTree);
+	removePageTree(thResources->globals->globalTree);
+	free(thResources->globals);
+	free(thResources);
+	
 	return NULL;
 }
