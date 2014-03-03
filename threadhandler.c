@@ -72,7 +72,7 @@ static int faultPage(long pageNumber, struct ThreadResources *thResources)
 			thResources->globals->globalTree)) {
 			return 0;
 		}
-		thResources->local->instructionCount++;
+		thResources->local->tickCount++;
 		countDown--;
 	}
 	thResources->local->faultCount++;
@@ -91,7 +91,7 @@ static void inGlobalTree(long pageNumber, struct ThreadResources *thResources,
 	} else {
 		insertIntoPageTree(pageNumber, *now, local->localTree);
 	}
-	local->instructionCount++;
+	local->tickCount++;
 }
 
 static void notInGlobalTree(long pageNumber,
@@ -144,9 +144,19 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 				}
 			}
 		}
+		if (strcmp(name, "modify") == 0) {
+			//do it again
+			time_t now = time(NULL);
+			pthread_mutex_lock(&globals->threadGlobalLock);
+			if (locatePageTreePR(pageNumber, globals->globalTree)){
+				inGlobalTree(pageNumber, thResources, &now);
+			} else {
+				notInGlobalTree(pageNumber, thResources, &now);
+			}
+		}
+		thResources->local->instructionCount++
 	}
 }
-
 
 void* startThreadHandler(void *resources)
 {

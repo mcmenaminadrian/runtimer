@@ -25,6 +25,8 @@ struct ThreadLocal
 	long faultCount;
 	long prevInstructionCount;
 	long prevFaultCount;
+	long tickCount;
+	long prevTickCount;
 	void* localTree;
 	void* optTree;
 	struct ThreadLocal *prev;
