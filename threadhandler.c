@@ -113,7 +113,6 @@ static void notInGlobalTree(long pageNumber,
 	}
 }
 	
-
 static void XMLCALL
 threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 { 
@@ -137,7 +136,7 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 				if (locatePageTreePR(pageNumber,
 						globals->globalTree)) {
 					inGlobalTree(pageNumber, thResources,
-						&now)
+						&now);
 				} else {
 					notInGlobalTree(pageNumber,
 						thResources, &now);
