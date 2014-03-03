@@ -84,9 +84,10 @@ static void inGlobalTree(long pageNumber, struct ThreadResources *thResources,
 {
 	struct ThreadGlobal *globals = thResources->globals;
 	struct ThreadLocal *local = thResources->local;
+	updateLRU(pageNumber, *now, globals->globalTree);
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	if (locatePageTreePR(pageNumber, local->localTree)) {
-		updateLRU(pageNumber, *now, globals->globalTree);
+		updateLRU(pageNumber, *now, local->localTree);
 	} else {
 		insertIntoPageTree(pageNumber, *now, local->localTree);
 	}
