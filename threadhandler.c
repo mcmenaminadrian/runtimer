@@ -12,7 +12,7 @@
 //C code that parses a thread
 
 static void replacePage(long pageNumber, struct ThreadResources *thResources)
-{
+{ printf("HERE>>>");
 	//find the page with the longest reuse distance,
 	//otherwise find the page with the oldest date
 	//either for this thread or all threads
@@ -67,7 +67,7 @@ static void replacePage(long pageNumber, struct ThreadResources *thResources)
 static int faultPage(long pageNumber, struct ThreadResources *thResources)
 {
 	int countDown = 100 * MEMWIDTH;
-	while (countDown) {		
+	while (countDown) {
 		if (locatePageTreePR(pageNumber,
 			thResources->globals->globalTree)) {
 			return 0;
@@ -79,11 +79,46 @@ static int faultPage(long pageNumber, struct ThreadResources *thResources)
 	return 1;
 }
 
+static void inGlobalTree(long pageNumber, struct ThreadResources *thResources,
+	time_t *now)
+{
+	struct ThreadGlobal *globals = thResources->globals;
+	struct ThreadLocal *local = thResources->local;
+	pthread_mutex_unlock(&globals->threadGlobalLock);
+	if (locatePageTreePR(pageNumber, local->localTree)) {
+		updateLRU(pageNumber, *now, globals->globalTree);
+	} else {
+		insertIntoPageTree(pageNumber, *now, local->localTree);
+	}
+	local->instructionCount++;
+}
+
+static void notInGlobalTree(long pageNumber,
+	struct ThreadResources *thResources, time_t *now)
+{
+	struct ThreadGlobal *globals = thResources->globals;
+	struct ThreadLocal *local = thResources->local;
+	pthread_mutex_unlock(&globals->threadGlobalLock);
+	if (faultPage(pageNumber, thResources)) {
+		pthread_mutex_lock(&globals->threadGlobalLock);
+		if (countPageTree(globals->globalTree) >= CORES * COREMEM) {
+			replacePage(pageNumber, thResources);
+			pthread_mutex_unlock(&globals->threadGlobalLock);
+		} else {
+			insertIntoPageTree(pageNumber, *now,
+				globals->globalTree);
+			pthread_mutex_unlock(&globals->threadGlobalLock);
+			insertIntoPageTree(pageNumber, *now, local->localTree);
+		}
+	}
+}
+	
+
 static void XMLCALL
 threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
-{ printf("HERE>>>>");
+{ 
 	int i;
-	long address;
+	long address, pageNumber;
 	struct ThreadResources *thResources;
 	struct ThreadGlobal *globals;
 	struct ThreadLocal *local;
@@ -96,63 +131,22 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 			if (strcmp(attr[i], "address") == 0) {
 				time_t now = time(NULL);
 				address = strtol(attr[i+1], NULL, 16);
+				pageNumber = address >> BITSHIFT;
 				//have address - is it already present?
 				pthread_mutex_lock(&globals->threadGlobalLock);
-				if (locatePageTreePR(address >> BITSHIFT,
+				if (locatePageTreePR(pageNumber,
 						globals->globalTree)) {
-					updateLRU(address >> BITSHIFT,
-						now,
-						globals->globalTree);
-					pthread_mutex_unlock(
-						&globals->threadGlobalLock);
-					if (locatePageTreePR(
-						address >> BITSHIFT,
-						local->localTree)) {
-						updateLRU(
-							address >> BITSHIFT,
-							now, local->localTree);
-					} else {
-						insertIntoPageTree(
-						address >> BITSHIFT,
-						now, local->localTree);
-					}
-					local->instructionCount++;
+					inGlobalTree(pageNumber, thResources,
+						&now)
 				} else {
-					pthread_mutex_unlock(
-					&globals->threadGlobalLock);
-					if (faultPage(address >> BITSHIFT,
-						thResources)) {
-						pthread_mutex_lock(
-						&globals->threadGlobalLock);
-						//have to add the page
-						int howMany = countPageTree(
-							globals->globalTree);
-						if (howMany >= CORES * COREMEM)
-						{
-						replacePage(
-							address >> BITSHIFT,
-							thResources);
-						pthread_mutex_unlock(&globals->
-							threadGlobalLock);
-						} else {
-						insertIntoPageTree(
-							address >> BITSHIFT,
-							now,
-							globals->globalTree);
-						pthread_mutex_unlock(&globals->
-							threadGlobalLock);
-						insertIntoPageTree(
-							address >>BITSHIFT,
-							now, local->localTree);
-						}
-					}
+					notInGlobalTree(pageNumber,
+						thResources, &now);
 				}
 			}
 		}
 	}
 }
 
-						
 
 void* startThreadHandler(void *resources)
 {
@@ -163,8 +157,6 @@ void* startThreadHandler(void *resources)
 
 	struct ThreadResources *thResources;
 	thResources = (struct ThreadResources*)resources;
-	printf("Setting up parser for thread %i\n",
-		thResources->local->threadNumber);
 	//Setup the Parser
 	XML_Parser p_threadParser = XML_ParserCreate("UTF-8");
 	if (!p_threadParser) {
@@ -183,7 +175,7 @@ void* startThreadHandler(void *resources)
 		goto cleanup;
 	}
 
-	do {
+	do { 
 		len = fread(data, 1, sizeof(data), inThreadXML);
 		done = len < sizeof(data);
 		

@@ -244,7 +244,7 @@ void removeFromPageTree(long pageNumber, void* tree)
 	pthread_mutex_lock(&prTree->tree_lock);
 	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, tree);
 	redblacknode<PageRecordLRU> *lruNode = locateLRU(pageNumber, tree);
-	prTree->pageRecordTree->removenode(*pageNode);
+	printf("C\n");prTree->pageRecordTree->removenode(*pageNode);printf("C\n");
 	prTree->pageRecordLRUTree->removenode(*lruNode);
 	pthread_mutex_unlock(&prTree->tree_lock);
 }
@@ -280,8 +280,8 @@ int countPageTree(void* tree)
 
 void updateLRU(long pageNumber, long lruTime, void* tree)
 {
-	removeFromPageTree(pageNumber, tree);
-	insertIntoPageTree(pageNumber, lruTime, tree);
+	printf("A\n");removeFromPageTree(pageNumber, tree);printf("A\n");
+	printf("B\n");insertIntoPageTree(pageNumber, lruTime, tree);printf("B\n");
 }
 
 struct PageChain* getPageChain(void *tree)
