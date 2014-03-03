@@ -154,7 +154,7 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 				notInGlobalTree(pageNumber, thResources, &now);
 			}
 		}
-		thResources->local->instructionCount++
+		thResources->local->instructionCount++;
 	}
 }
 
