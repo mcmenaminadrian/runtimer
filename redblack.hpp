@@ -515,6 +515,9 @@ template <typename NODE> bool redblacktree<NODE>::find(NODE& v) const
 
 template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 {
+	if (&v == NULL) {
+		throw invalid_argument("Attempted to remove NULL node");
+	}
 	NODE* located = locatenode(&v, root);
 	NODE* altnode = NULL;
 	if (located == NULL)

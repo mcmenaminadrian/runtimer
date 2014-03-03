@@ -124,7 +124,7 @@ redblacknode<PageRecordLRU>* locateLRU(long pageNumber, void* tree)
 	
 	pageNode = findPagePRInTree(finder, prTree->pageRecordTree);
 	delete finder;
-	
+	printf("Pagenumber is %li PageNode has pageNumber %li and LRU of %li\n",pageNumber, pageNode->getvalue().getPageNumber(), pageNode->getvalue().getLRUNumber());	
 	PageRecordLRU lruFind = PageRecordLRU(pageNumber,
 		pageNode->getvalue().getLRUNumber());
 	finderLRU = new redblacknode<PageRecordLRU>(lruFind);
@@ -179,20 +179,6 @@ void removePageTree(void* tree)
 	delete prTree;
 }
 
-inline void* getRootPageTree(void* tree)
-{
-	PageRecordTree *prTree;
-	prTree = static_cast<PageRecordTree *>(tree);
-	return static_cast<void*>(prTree->pageRecordTree->root);
-}
-
-inline void* getRootPageTreeLRU(void* tree)
-{
-	PageRecordTree *prTree;
-	prTree = static_cast<PageRecordTree *>(tree);
-	return static_cast<void*>(prTree->pageRecordLRUTree->root);
-}
-
 void insertIntoPageTree(long pageNumber, time_t lruTime, void* tree)
 {
 	PageRecordTree *prTree;
@@ -241,11 +227,10 @@ void removeFromPageTree(long pageNumber, void* tree)
 	PageRecordTree *prTree;
 	prTree = static_cast<PageRecordTree *>(tree);
 	pthread_mutex_lock(&prTree->tree_lock);
-	PageRecord prToGo(pageNumber, 0);
-	redblacknode<PageRecord> pageNode(prToGo);
+	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, tree);
 	redblacknode<PageRecordLRU> *lruNode = locateLRU(pageNumber, tree);
-	prTree->pageRecordTree->removenode(pageNode);
-	prTree->pageRecordLRUTree->removenode(*lruNode);
+	prTree->pageRecordTree->removenode(*pageNode);
+	printf("B\n");prTree->pageRecordLRUTree->removenode(*lruNode);printf("C\n");
 	pthread_mutex_unlock(&prTree->tree_lock);
 }
 
