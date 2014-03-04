@@ -109,6 +109,7 @@ int startFirstThread(char* outputprefix)
 	firstThreadLocal->prev = NULL;
 	firstThreadLocal->next = NULL;	
 	firstThreadLocal->instructionCount = 0;
+	firstThreadLocal->tickCount = 0;
 	firstThreadLocal->localTree = createPageTree();
 	if (!firstThreadLocal->localTree) {
 		fprintf(stderr,
