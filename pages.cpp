@@ -1,5 +1,6 @@
 #include <iostream>
 #include <ctime>
+#include <vector>
 #include "pthread.h"
 #include "redblack.hpp"
 #include "threadhandler.h"
@@ -29,6 +30,7 @@ class PageRecordLRU {
 	void setPageNumbers(const vector<long> vectPN);
 	const time_t getLRUNumber(void) const;
 	void setLRUNumber(const time_t lruN);
+	void addPage(const long pgN);
 	virtual bool operator==(PageRecordLRU& pRLRU) const;
 	virtual bool operator<(PageRecordLRU& pRLRU) const;
 };
