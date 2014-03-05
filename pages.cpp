@@ -8,20 +8,27 @@ using namespace std;
 
 class PageRecord {
 	protected:
-		long pageNumber;
-		time_t lruNumber;
+	long pageNumber;
+	time_t lruNumber;
 	public:
-		PageRecord(const long pgN, const time_t lruN);
-		const long getPageNumber(void) const;
-		const time_t getLRUNumber(void) const;
-		void setLRUNumber(const time_t lruN);
-		virtual bool operator==(PageRecord& pR) const;
-		virtual bool operator<(PageRecord& pR) const;
+	PageRecord(const long pgN, const time_t lruN);
+	const long getPageNumber(void) const;
+	const time_t getLRUNumber(void) const;
+	void setLRUNumber(const time_t lruN);
+	virtual bool operator==(PageRecord& pR) const;
+	virtual bool operator<(PageRecord& pR) const;
 };
 
-class PageRecordLRU: public PageRecord {
+class PageRecordLRU {
+	protected:
+	time_t lruNumber;
+	vector<long> pageNumbers;
 	public:
-	PageRecordLRU(const long pgN, const time_t lruN):PageRecord(pgN, lruN){};
+	PageRecordLRU(const long pgN, const time_t lruN);
+	vector<long>& getPageNumbers(void) const;
+	void setPageNumbers(const vector<long> vectPN);
+	const time_t getLRUNumber(void) const;
+	void setLRUNumber(const time_t lruN);
 	virtual bool operator==(PageRecordLRU& pRLRU) const;
 	virtual bool operator<(PageRecordLRU& pRLRU) const;
 };
@@ -49,6 +56,38 @@ PageRecord::PageRecord(const long pgN, const time_t lruN)
 	lruNumber = lruN;
 }
 
+PageRecordLRU::PageRecordLRU(const long pgN, const time_t lruN)
+{
+	lruNumber = lruN;
+	pageNumbers.push_back(pgN);
+}
+
+vector<long>& PageRecordLRU::getPageNumbers(void) const
+{
+	return pageNumbers;
+}
+
+void PageRecordLRU::setPageNumbers(const vector<long> pgNumbers)
+{
+	pageNumbers.resize(0);
+	pageNumbers = pgNumbers;
+}
+
+const time_t PageRecordLRU::getLRUNumber(void) const
+{
+	return lruNumber;
+}
+
+void PageRecordLRU::setLRUNumber(const time_t lruN)
+{
+	lruNumber = lruN;
+}
+
+void PageRecordLRU::addPage(const long pgN)
+{
+	pageNumbers.push_back(pgN);
+}
+
 bool PageRecord::operator==(PageRecord& pRecord) const
 {
 	return (pageNumber == pRecord.getPageNumber());
@@ -61,8 +100,7 @@ bool PageRecord::operator<(PageRecord& pRecord) const
 
 bool PageRecordLRU::operator==(PageRecordLRU& pRecordLRU) const
 {
-	return (lruNumber == pRecordLRU.getLRUNumber() &&
-		pageNumber == pRecordLRU.getPageNumber());
+	return (lruNumber == pRecordLRU.getLRUNumber());
 }
 
 bool PageRecordLRU::operator<(PageRecordLRU& pRecordLRU) const
@@ -100,26 +138,22 @@ findPageLRUInTree(redblacknode<PageRecordLRU>* node,
 	return (tree->locatenode(node, root));
 }	
 
-redblacknode<PageRecord>* locatePR(long pageNumber, void* tree)
+redblacknode<PageRecord>* locatePR(long pageNumber, PageRecordTree* prTree)
 {
-	PageRecordTree *prTree;
 	redblacknode<PageRecord> *finder, *pageNode;
 	PageRecord prFind = PageRecord(pageNumber, 0);
-	prTree = static_cast<PageRecordTree *>(tree);
 	finder = new redblacknode<PageRecord>(prFind);
 	pageNode = findPagePRInTree(finder, prTree->pageRecordTree);
 	delete finder;
 	return pageNode;
 }
 
-redblacknode<PageRecordLRU>* locateLRU(long pageNumber, void* tree)
+redblacknode<PageRecordLRU>* locateLRU(long pageNumber, PageRecordTree* prTree)
 {
-	PageRecordTree *prTree;
 	redblacknode<PageRecord> *finder, *pageNode;
 	redblacknode<PageRecordLRU> *finderLRU, *lruNode;
 
 	PageRecord prFind = PageRecord(pageNumber, 0);
-	prTree = static_cast<PageRecordTree *>(tree);
 	finder = new redblacknode<PageRecord>(prFind);
 	
 	pageNode = findPagePRInTree(finder, prTree->pageRecordTree);
@@ -129,6 +163,7 @@ redblacknode<PageRecordLRU>* locateLRU(long pageNumber, void* tree)
 		pageNode->getvalue().getLRUNumber());
 	finderLRU = new redblacknode<PageRecordLRU>(lruFind);
 	lruNode = findPageLRUInTree(finderLRU, prTree->pageRecordLRUTree);
+	printf("We are looking for %li at time %li\n", finderLRU->getvalue().getPageNumber(), finderLRU->getvalue().getLRUNumber());
 	delete finderLRU;
 	return lruNode;
 }
@@ -206,7 +241,7 @@ void* locatePageTreePR(long pageNumber, void* tree)
 	PageRecordTree *prTree;
 	prTree = static_cast<PageRecordTree *>(tree);
 	pthread_mutex_lock(&prTree->tree_lock);
-	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, tree);
+	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, prTree);
 	pthread_mutex_unlock(&prTree->tree_lock);
 	return static_cast<void*>(pageNode);
 }
@@ -216,7 +251,7 @@ void* locatePageTreeLRU(long pageNumber, void* tree)
 	PageRecordTree *prTree;
 	prTree = static_cast<PageRecordTree *>(tree);
 	pthread_mutex_lock(&prTree->tree_lock);
-	redblacknode<PageRecordLRU> *lruNode = locateLRU(pageNumber, tree);
+	redblacknode<PageRecordLRU> *lruNode = locateLRU(pageNumber, prTree);
 	pthread_mutex_unlock(&prTree->tree_lock);
 	return static_cast<void*>(lruNode);
 }
@@ -227,8 +262,10 @@ void removeFromPageTree(long pageNumber, void* tree)
 	PageRecordTree *prTree;
 	prTree = static_cast<PageRecordTree *>(tree);
 	pthread_mutex_lock(&prTree->tree_lock);
-	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, tree);
-	redblacknode<PageRecordLRU> *lruNode = locateLRU(pageNumber, tree);
+	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, prTree);
+	redblacknode<PageRecordLRU> *lruNode = locateLRU(pageNumber, prTree);
+	if (lruNode == NULL)
+		printf("FAIL\n");
 	prTree->pageRecordTree->removenode(*pageNode);
 	printf("B\n");prTree->pageRecordLRUTree->removenode(*lruNode);printf("C\n");
 	pthread_mutex_unlock(&prTree->tree_lock);
@@ -247,8 +284,8 @@ void* removeOldestFromPageTree(void* tree)
 	if (oldest == NULL)
 		goto exit;
 	pageNumber = oldest->getvalue().getPageNumber();
-	pageNode = locatePR(pageNumber, tree);
-	lruNode = locateLRU(pageNumber, tree);
+	pageNode = locatePR(pageNumber, prTree);
+	lruNode = locateLRU(pageNumber, prTree);
 	prTree->pageRecordTree->removenode(*pageNode);
 	prTree->pageRecordLRUTree->removenode(*lruNode);	
 exit:
