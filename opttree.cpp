@@ -169,7 +169,7 @@ void readOPTTree(void *tree, char *path)
 }
 
 long findNextInstruction(long currentInstruction, InstructionChain* chain)
-{
+{ 
 	if (chain == NULL) {
 		return LONG_MAX;
 	} else {
