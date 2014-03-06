@@ -230,7 +230,7 @@ void insertIntoPageTree(long pageNumber, time_t lruTime, void* tree)
 		delete additionLRUNode;
 	} else {	
 		prTree->pageRecordLRUTree->insertnode(additionLRUNode,
-		prTree->pageRecordLRUTree->root);
+			prTree->pageRecordLRUTree->root);
 	}
 	pthread_mutex_unlock(&prTree->tree_lock);
 }
@@ -251,12 +251,11 @@ void removeFromPageTree(long pageNumber, void* tree)
 	prTree = static_cast<PageRecordTree *>(tree);
 	pthread_mutex_lock(&prTree->tree_lock);
 	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, prTree);
-	PageRecordLRU findLRU(pageNumber, pageNode->getvalue().getLRUNumber());
-	redblacknode<PageRecordLRU>* lookLRU =
-		new redblacknode<PageRecordLRU>(findLRU);
-	redblacknode<PageRecordLRU>* foundLRU = 
-		prTree->pageRecordLRUTree->locatenode(lookLRU,
-		prTree->pageRecordLRUTree->root);
+	if (!pageNode) {
+		throw runtime_error("Could not locate Page item");
+	}
+	redblacknode<PageRecordLRU>* foundLRU = locateLRU(
+		pageNode->getvalue().getLRUNumber(), prTree);
 	if (!foundLRU) {
 		throw runtime_error("Could not locate LRU item.");
 	}

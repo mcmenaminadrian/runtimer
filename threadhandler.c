@@ -102,7 +102,7 @@ static void notInGlobalTree(long pageNumber,
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	if (faultPage(pageNumber, thResources)) {
 		pthread_mutex_lock(&globals->threadGlobalLock);
-		if (countPageTree(globals->globalTree) >= CORES * COREMEM) {
+		if (countPageTree(globals->globalTree) >= CORES * COREMEM/4096){
 			replacePage(pageNumber, thResources);
 			pthread_mutex_unlock(&globals->threadGlobalLock);
 		} else {
