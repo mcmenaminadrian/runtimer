@@ -262,7 +262,8 @@ void removeFromPageTree(long pageNumber, void* tree)
 	}
 	vector<long> pages = foundLRU->getvalue().getPageNumbers();
 	bool gotPage = false;
-	for (auto it = pages.begin(); it != pages.end(); ++it) {
+	for (vector<long>::iterator it = pages.begin(); it != pages.end(); ++it)
+	{
 		if (*it == pageNumber) {
 			pages.erase(it);
 			gotPage = true;
