@@ -7,9 +7,8 @@
 #include "threadhandler.h"
 #include "opttree.h"
 
-static struct ThreadRecord *startTR = NULL;
+struct ThreadRecord *startTR = NULL;
 static char outputprefix[BUFFSZ];
-static struct ThreadGlobal *globalThreadList = NULL;
 
 struct ThreadRecord*
 	mapThread(struct ThreadRecord **root, int tNum, char *fileName)
@@ -83,7 +82,7 @@ int startFirstThread(char* outputprefix)
 	
 	//start the first thread
 	//first task is read the OPT string
-	globalThreadList =
+	struct ThreadGlobal* globalThreadList =
 		(struct ThreadGlobal*)malloc(sizeof (struct ThreadGlobal));
 	if (!globalThreadList) {
 		fprintf(stderr,
@@ -92,7 +91,7 @@ int startFirstThread(char* outputprefix)
 	}
 
 	globalThreadList->globalTree = createPageTree();
-	if (!globalThreadList->globalTree) {
+	if (!(globalThreadList->globalTree)) {
 		fprintf(stderr,
 			"Could not create global tree");
 		goto failGlobalTree;
@@ -110,15 +109,16 @@ int startFirstThread(char* outputprefix)
 	firstThreadLocal->next = NULL;	
 	firstThreadLocal->instructionCount = 0;
 	firstThreadLocal->tickCount = 0;
+	firstThreadLocal->faultCount = 0;
 	firstThreadLocal->localTree = createPageTree();
-	if (!firstThreadLocal->localTree) {
+	if (!(firstThreadLocal->localTree)) {
 		fprintf(stderr,
 			"Could not initialise local tree.\n");
 		goto failLocalTree;
 	}
 
 	firstThreadLocal->optTree = createOPTTree();
-	if (!firstThreadLocal->optTree) {
+	if (!(firstThreadLocal->optTree)) {
 		fprintf(stderr,
 			"Could not initialise OPT tree.\n");
 		goto failOPTTreeCreate;

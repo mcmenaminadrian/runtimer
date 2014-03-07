@@ -16,6 +16,6 @@ opttree.o: opttree.cpp redblack.hpp
 rbpages.o: pages.cpp redblack.hpp
 	g++ -O2 -o rbpages.o -c -Wall pages.cpp
 
-runtimer.o: runtimer.c 
+runtimer.o: runtimer.c threadhandler.h 
 	gcc -O2 -o runtimer.o -c -Wall runtimer.c
 

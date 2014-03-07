@@ -16,7 +16,7 @@ struct ThreadRecord
 	char path[BUFFSZ];
 	struct ThreadLocal *local;
 	struct ThreadRecord *next;
-	pthread_mutex_t lockToAddDeleteRecord;
+//	pthread_mutex_t lockToAddDeleteRecord;
 };
 
 struct ThreadLocal
@@ -24,10 +24,10 @@ struct ThreadLocal
 	int threadNumber;
 	long instructionCount;
 	long faultCount;
-	long prevInstructionCount;
-	long prevFaultCount;
+//	long prevInstructionCount;
+//	long prevFaultCount;
 	long tickCount;
-	long prevTickCount;
+//	long prevTickCount;
 	void* localTree;
 	void* optTree;
 	struct ThreadLocal *prev;
