@@ -69,8 +69,7 @@ class redblacktree {
 
 template <typename T> T& redblacknode<T>::getvalue()
 {
-	T& retval = value;
-	return retval;
+	return value;
 }
 
 template <typename T> void redblacknode<T>::showinorder(redblacknode<T>* node)
