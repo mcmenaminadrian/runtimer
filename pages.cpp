@@ -2,6 +2,7 @@
 #include <ctime>
 #include <vector>
 #include <stdexcept>
+#include <cstdlib>
 #include "pthread.h"
 #include "redblack.hpp"
 #include "threadhandler.h"
@@ -172,7 +173,7 @@ buildPageChain(struct PageChain** headChain,
 	}
 	buildPageChain(headChain, activeChain, node->left);
 	struct PageChain *nextChain =
-		(struct PageChain*)malloc(sizeof(struct PageChain));
+		(struct PageChain*) malloc(sizeof(struct PageChain));
 	nextChain->next = NULL;
 	nextChain->page = node->getvalue().getPageNumber();
 	if (*activeChain == NULL) {
