@@ -139,7 +139,8 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 						globals->globalTree)) { printf("Inside\n");
 					inGlobalTree(pageNumber, thResources,
 						&now);
-				} else { printf("Outside\n");
+				} else {
+					printf("Page number is %li, thResources is %li, now is %li\n", pageNumber, thResources, now);
 					notInGlobalTree(pageNumber,
 						thResources, &now);
 				} printf("On other side\n");
