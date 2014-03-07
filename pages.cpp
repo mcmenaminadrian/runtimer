@@ -230,7 +230,7 @@ void insertIntoPageTree(long pageNumber, time_t lruTime, void* tree)
 		delete additionLRUNode;
 	} else {	
 		prTree->pageRecordLRUTree->insertnode(additionLRUNode,
-		prTree->pageRecordLRUTree->root);
+			prTree->pageRecordLRUTree->root);
 	}
 	pthread_mutex_unlock(&prTree->tree_lock);
 }
@@ -251,12 +251,11 @@ void removeFromPageTree(long pageNumber, void* tree)
 	prTree = static_cast<PageRecordTree *>(tree);
 	pthread_mutex_lock(&prTree->tree_lock);
 	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, prTree);
-	PageRecordLRU findLRU(pageNumber, pageNode->getvalue().getLRUNumber());
-	redblacknode<PageRecordLRU>* lookLRU =
-		new redblacknode<PageRecordLRU>(findLRU);
-	redblacknode<PageRecordLRU>* foundLRU = 
-		prTree->pageRecordLRUTree->locatenode(lookLRU,
-		prTree->pageRecordLRUTree->root);
+	if (!pageNode) {
+		throw runtime_error("Could not locate Page item");
+	}
+	redblacknode<PageRecordLRU>* foundLRU = locateLRU(
+		pageNode->getvalue().getLRUNumber(), prTree);
 	if (!foundLRU) {
 		throw runtime_error("Could not locate LRU item.");
 	}
@@ -272,7 +271,9 @@ void removeFromPageTree(long pageNumber, void* tree)
 	if (!gotPage) {
 		throw runtime_error("Page does not seem to exist in LRU heap");
 	}
-	prTree->pageRecordTree->removenode(*pageNode);
+	printf("NOES\n");if (!prTree->pageRecordTree->removenode(*pageNode)) {
+		throw runtime_error("Attempting to remove non-existant node");
+	} printf("YES\n");
 	pthread_mutex_unlock(&prTree->tree_lock);
 }
 
@@ -317,8 +318,8 @@ int countPageTree(void* tree)
 
 void updateLRU(long pageNumber, time_t lruTime, void* tree)
 {
-	removeFromPageTree(pageNumber, tree);
-	insertIntoPageTree(pageNumber, lruTime, tree);
+	printf("UU\n");removeFromPageTree(pageNumber, tree);printf("VV\n");
+	insertIntoPageTree(pageNumber, lruTime, tree);printf("WW\n");
 }
 
 struct PageChain* getPageChain(void *tree)

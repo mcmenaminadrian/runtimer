@@ -4,8 +4,9 @@
 #define BUFFSZ 512
 #define BITSHIFT 12
 #define CORES 16
-#define COREMEM 32
+#define COREMEM 32768
 #define MEMWIDTH 16
+#define PAGESIZE (1 << BITSHIFT) 
 
 struct ThreadLocal;
 
