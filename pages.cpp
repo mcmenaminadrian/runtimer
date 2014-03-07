@@ -3,6 +3,7 @@
 #include <vector>
 #include <stdexcept>
 #include <cstdlib>
+#include <cstdio>
 #include "pthread.h"
 #include "redblack.hpp"
 #include "threadhandler.h"
