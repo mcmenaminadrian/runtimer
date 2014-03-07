@@ -169,7 +169,8 @@ void readOPTTree(void *tree, char *path)
 	delete[] buffIn;
 }
 
-long findNextInstruction(long currentInstruction, InstructionChain* chain)
+long
+findNextInstruction(unsigned long currentInstruction, InstructionChain* chain)
 { 
 	if (chain == NULL) {
 		return LONG_MAX;
