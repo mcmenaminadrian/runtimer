@@ -110,7 +110,7 @@ static void notInGlobalTree(long pageNumber,
 			insertIntoPageTree(pageNumber, *now,
 				globals->globalTree);
 			pthread_mutex_unlock(&globals->threadGlobalLock);
-			insertIntoPageTree(pageNumber, *now, local->localTree);
+			printf("LOCAL\n");insertIntoPageTree(pageNumber, *now, local->localTree);
 		}
 	} printf("Inserted page %li\n", pageNumber);
 }

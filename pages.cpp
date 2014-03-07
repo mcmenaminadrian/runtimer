@@ -1,6 +1,7 @@
 #include <iostream>
 #include <ctime>
 #include <vector>
+#include <stdexcept>
 #include "pthread.h"
 #include "redblack.hpp"
 #include "threadhandler.h"
@@ -222,9 +223,7 @@ void insertIntoPageTree(long pageNumber, time_t lruTime, void* tree)
 	pthread_mutex_lock(&prTree->tree_lock);
 	prTree->pageRecordTree->insertnode(additionPRNode,
 		prTree->pageRecordTree->root);
-	redblacknode<PageRecordLRU>* foundLRU = 
-		prTree->pageRecordLRUTree->locatenode(additionLRUNode,
-		prTree->pageRecordLRUTree->root);
+	redblacknode<PageRecordLRU>* foundLRU = locateLRU(lruTime, prTree);
 	if (foundLRU) {
 		foundLRU->getvalue().addPage(pageNumber);
 		delete additionLRUNode;
@@ -271,7 +270,7 @@ void removeFromPageTree(long pageNumber, void* tree)
 	if (!gotPage) {
 		throw runtime_error("Page does not seem to exist in LRU heap");
 	}
-	printf("NOES\n");if (!prTree->pageRecordTree->removenode(*pageNode)) {
+	printf("NOES\n");if (!(prTree->pageRecordTree->removenode(*pageNode))) {
 		throw runtime_error("Attempting to remove non-existant node");
 	} printf("YES\n");
 	pthread_mutex_unlock(&prTree->tree_lock);
