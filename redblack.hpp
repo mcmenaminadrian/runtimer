@@ -481,20 +481,20 @@ template <typename NODE> NODE* redblacktree<NODE>::max() const
 }
 
 template <typename NODE> void
-	redblacktree<NODE>::countup(NODE* node, int& x) const
+	redblacktree<NODE>::countup(NODE* node) const
 {
-	if (node == NULL)
-		return;
-	countup(node->left, x);
-	countup(node->right, x);
-	x++;
+	int count = 0
+	if (node != NULL) {
+		count = 1;
+		count += count(node->left);
+		count += count(node->right);
+	}
+	return count;
 }
 
 template <typename NODE> int redblacktree<NODE>::count() const
 {
-	int cnt = 0;
-	countup(root, cnt);
-	return cnt;
+	return countup(root);
 }
 
 template <typename NODE> NODE* redblacktree<NODE>::maxleft(NODE* node) const
