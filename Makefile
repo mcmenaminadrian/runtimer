@@ -4,6 +4,10 @@ all: runtimer
 
 debug: debugtimer
 
+#get rid of junk
+clean:
+	rm -f *.o
+
 # normal build
 runtimer: runtimer.o insttree.o rbpages.o opttree.o threadhandler.o
 	g++ -O2 -o runtimer -Wall insttree.o rbpages.o opttree.o \

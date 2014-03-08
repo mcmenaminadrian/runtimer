@@ -277,11 +277,9 @@ void removeFromPageTree(long pageNumber, void* tree)
 	if (!gotPage) {
 		throw runtime_error("Page does not seem to exist in LRU heap");
 	}
-	printf("prTRee: %li pageRecordTree: %li pageNode %li\n", prTree, prTree->pageRecordTree, pageNode);
 	if (!(prTree->pageRecordTree->removenode(*searchNode))) {
 		throw runtime_error("Attempting to remove non-existant node");
 	}
-	printf("YES\n");
 	pthread_mutex_unlock(&prTree->tree_lock);
 }
 
@@ -326,8 +324,8 @@ int countPageTree(void* tree)
 
 void updateLRU(long pageNumber, time_t lruTime, void* tree)
 {
-	printf("UU\n");removeFromPageTree(pageNumber, tree);printf("VV\n");
-	insertIntoPageTree(pageNumber, lruTime, tree);printf("WW\n");
+	removeFromPageTree(pageNumber, tree);
+	insertIntoPageTree(pageNumber, lruTime, tree);
 }
 
 struct PageChain* getPageChain(void *tree)

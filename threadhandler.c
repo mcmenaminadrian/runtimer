@@ -30,7 +30,7 @@ static void replacePage(long pageNumber, struct ThreadResources *thResources)
 			currentChain->page);
 		} else {
 			insertIntoTree(currentChain->page, instructionNext,
-				instructionTree); printf("Inserted %li\n", currentChain->page);
+				instructionTree);
 		}
 		currentChain = currentChain->next;
 	}
@@ -46,7 +46,7 @@ static void replacePage(long pageNumber, struct ThreadResources *thResources)
 				thResources->globals->globalTree)) {
 				pageFound = 1;
 				removeFromPageTree(maximumReuse,
-					thResources->globals->globalTree); printf("Removed page %li\n", maximumReuse);
+					thResources->globals->globalTree);
 			}
 			pthread_mutex_unlock(
 				&thResources->globals->threadGlobalLock);
@@ -84,12 +84,12 @@ static void inGlobalTree(long pageNumber, struct ThreadResources *thResources,
 {
 	struct ThreadGlobal *globals = thResources->globals;
 	struct ThreadLocal *local = thResources->local;
-	printf("A\n");updateLRU(pageNumber, *now, globals->globalTree);printf("B\n");
+	updateLRU(pageNumber, *now, globals->globalTree);
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	if (locatePageTreePR(pageNumber, local->localTree)) {
-		printf("X\n");updateLRU(pageNumber, *now, local->localTree);printf("Y\n");
+		updateLRU(pageNumber, *now, local->localTree);
 	} else {
-		printf("U\n");insertIntoPageTree(pageNumber, *now, local->localTree);printf("V\n");
+		insertIntoPageTree(pageNumber, *now, local->localTree);
 	}
 	local->tickCount++;
 }
@@ -107,12 +107,13 @@ static void notInGlobalTree(long pageNumber,
 			replacePage(pageNumber, thResources);
 			pthread_mutex_unlock(&globals->threadGlobalLock);
 		} else {
-			printf("Calling insertIntoPage\n");insertIntoPageTree(pageNumber, *now,
+			insertIntoPageTree(pageNumber, *now,
 				globals->globalTree);
-			printf("Locking mutex\n");pthread_mutex_unlock(&globals->threadGlobalLock);
-			printf("LOCAL\n");insertIntoPageTree(pageNumber, *now, local->localTree);
+			pthread_mutex_unlock(&globals->threadGlobalLock);
+			insertIntoPageTree(pageNumber, *now, local->localTree);
 		}
-	} printf("Inserted page %li\n", pageNumber);
+	}
+	printf("Tree now has %li pages\n", countPageTree(globals->globalTree));
 }
 	
 static void XMLCALL
@@ -128,21 +129,21 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 	local = thResources->local;
 	if (strcmp(name, "instruction") == 0 || strcmp(name, "load") == 0 ||
 		strcmp(name, "modify") == 0 || strcmp(name, "store") == 0) {
-		for (i = 0; attr[i]; i += 2) { printf("Executing a %s\n", name);
+		for (i = 0; attr[i]; i += 2) {
 			if (strcmp(attr[i], "address") == 0) {
 				time_t now = time(NULL);
 				address = strtol(attr[i+1], NULL, 16);
 				pageNumber = address >> BITSHIFT;
 				//have address - is it already present?
-				pthread_mutex_lock(&globals->threadGlobalLock); printf("locked\n");
+				pthread_mutex_lock(&globals->threadGlobalLock);
 				if (locatePageTreePR(pageNumber,
-						globals->globalTree)) { printf("Inside\n");
+						globals->globalTree)) {
 					inGlobalTree(pageNumber, thResources,
 						&now);
 				} else {
 					notInGlobalTree(pageNumber,
 						thResources, &now);
-				} printf("On other side\n");
+				}
 			}
 		}
 		if (strcmp(name, "modify") == 0) {
