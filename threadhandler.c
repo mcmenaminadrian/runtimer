@@ -107,9 +107,9 @@ static void notInGlobalTree(long pageNumber,
 			replacePage(pageNumber, thResources);
 			pthread_mutex_unlock(&globals->threadGlobalLock);
 		} else {
-			insertIntoPageTree(pageNumber, *now,
+			printf("Calling insertIntoPage\n");insertIntoPageTree(pageNumber, *now,
 				globals->globalTree);
-			pthread_mutex_unlock(&globals->threadGlobalLock);
+			printf("Locking mutex\n");pthread_mutex_unlock(&globals->threadGlobalLock);
 			printf("LOCAL\n");insertIntoPageTree(pageNumber, *now, local->localTree);
 		}
 	} printf("Inserted page %li\n", pageNumber);
@@ -140,7 +140,6 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 					inGlobalTree(pageNumber, thResources,
 						&now);
 				} else {
-					printf("Page number is %li, thResources is %li, now is %li\n", pageNumber, thResources, now);
 					notInGlobalTree(pageNumber,
 						thResources, &now);
 				} printf("On other side\n");

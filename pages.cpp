@@ -255,8 +255,12 @@ void removeFromPageTree(long pageNumber, void* tree)
 	if (!pageNode) {
 		throw runtime_error("Could not locate Page item");
 	}
+	PageRecord searchPR(pageNode->getvalue().getPageNumber(),
+		pageNode->getvalue().getLRUNumber());
+	redblacknode<PageRecord>* searchNode =
+		new redblacknode<PageRecord>(searchPR);
 	redblacknode<PageRecordLRU>* foundLRU = locateLRU(
-		pageNode->getvalue().getLRUNumber(), prTree);
+		searchNode->getvalue().getLRUNumber(), prTree);
 	if (!foundLRU) {
 		throw runtime_error("Could not locate LRU item.");
 	}
@@ -273,9 +277,11 @@ void removeFromPageTree(long pageNumber, void* tree)
 	if (!gotPage) {
 		throw runtime_error("Page does not seem to exist in LRU heap");
 	}
-	printf("NOES\n");if (!(prTree->pageRecordTree->removenode(*pageNode))) {
+	printf("prTRee: %li pageRecordTree: %li pageNode %li\n", prTree, prTree->pageRecordTree, pageNode);
+	if (!(prTree->pageRecordTree->removenode(*searchNode))) {
 		throw runtime_error("Attempting to remove non-existant node");
-	} printf("YES\n");
+	}
+	printf("YES\n");
 	pthread_mutex_unlock(&prTree->tree_lock);
 }
 
