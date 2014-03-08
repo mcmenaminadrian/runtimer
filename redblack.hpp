@@ -486,8 +486,8 @@ template <typename NODE> int
 	int count = 0;
 	if (node != NULL) {
 		count = 1;
-		count += count(node->left);
-		count += count(node->right);
+		count += countup(node->left);
+		count += countup(node->right);
 	}
 	return count;
 }
