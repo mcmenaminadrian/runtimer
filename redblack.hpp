@@ -55,7 +55,7 @@ class redblacktree {
 		void free(NODE*);
 		NODE* maxleft(NODE*) const;
 		NODE* minright(NODE*) const;
-		void countup(NODE*, int&) const;
+		int countup(NODE*) const;
 	public:
 		NODE* root;
 		NODE* locatenode(NODE*, NODE*) const;  
@@ -64,7 +64,7 @@ class redblacktree {
 		bool find(NODE&) const;
 		NODE* min() const;
 		NODE* max() const;
-		int count() const;
+		const int count() const;
 		redblacktree();
 		~redblacktree();
 };
@@ -480,7 +480,7 @@ template <typename NODE> NODE* redblacktree<NODE>::max() const
 	} while(true);
 }
 
-template <typename NODE> void
+template <typename NODE> int 
 	redblacktree<NODE>::countup(NODE* node) const
 {
 	int count = 0
@@ -492,7 +492,7 @@ template <typename NODE> void
 	return count;
 }
 
-template <typename NODE> int redblacktree<NODE>::count() const
+template <typename NODE> const int redblacktree<NODE>::count() const
 {
 	return countup(root);
 }
