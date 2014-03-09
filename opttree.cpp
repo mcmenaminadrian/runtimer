@@ -208,6 +208,21 @@ void removeOPTTree(void* tree)
 	cleanOPTTree(optTree->root);
 }	
 	
+void optInOrder(redblacknode<OPTTreeNode>* node)
+{
+	if (node == NULL)
+		return;
+	optInOrder(node->left);
+	printf("%li, ", node->getvalue().getPage();
+	optInOrder(node->right);
+}
+
+void outlineOpt(void* tree)
+{
+	redblacktree<redblacknode<OPTTreeNode> >* optTree;
+	optTree = static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
+	optInOrder(optTree->root);
+}
 
 } //end extern "C"
 

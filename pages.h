@@ -17,5 +17,5 @@ void* removeOldestFromPageTree(void* tree);
 int countPageTree(void* tree);
 void updateLRU(long pageNumber, time_t lruTime, void* tree);
 struct PageChain* getPageChain(void* tree);
-
+void showInOrder(void* tree);
 #endif

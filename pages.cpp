@@ -324,8 +324,53 @@ int countPageTree(void* tree)
 
 void updateLRU(long pageNumber, time_t lruTime, void* tree)
 {
-	removeFromPageTree(pageNumber, tree);
-	insertIntoPageTree(pageNumber, lruTime, tree);
+	//fetch the node in the PR Tree
+	PageRecordTree *prTree;
+	prTree = static_cast<PageRecordTree *>(tree);
+	pthread_mutex_lock(&prTree->tree_lock);
+	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, prTree);
+	if (!pageNode) {
+		throw runtime_error("Could not locate Page item");
+	}
+	time_t oldLRU = pageNode->getvalue().getLRUNumber();
+	if (oldLRU == lruTime) {
+		pthread_mutex_unlock(&prTree->tree_lock);
+		return;
+	}
+	pageNode->getvalue().setLRUNumber(lruTime);		
+
+	//fetch node in LRU tree
+	redblacknode<PageRecordLRU>* foundLRU = locateLRU(oldLRU, prTree);
+	if (!foundLRU) {
+		throw runtime_error("Could not locate LRU item.");
+	}
+	vector<long> pages = foundLRU->getvalue().getPageNumbers();
+	//remove the page from this node
+	bool gotPage = false;
+	for (vector<long>::iterator it = pages.begin(); it != pages.end(); ++it)
+	{
+		if (*it == pageNumber) {
+			pages.erase(it);
+			gotPage = true;
+			break;
+		}
+	}
+	if (!gotPage) {
+		throw runtime_error("Page does not seem to exist in LRU heap");
+	}
+
+	//is the new LRU time already indexed?
+	foundLRU = locateLRU(lruTime, prTree);
+	if (foundLRU) {
+		foundLRU->getvalue().addPage(pageNumber);
+	} else {
+		PageRecordLRU addPRLRU(pageNumber, lruTime);
+		redblacknode<PageRecordLRU>* insertedLRU =
+			new redblacknode<PageRecordLRU>(addPRLRU);
+		prTree->pageRecordLRUTree->insertnode(insertedLRU,
+			prTree->pageRecordLRUTree->root);
+	}
+	pthread_mutex_unlock(&prTree->tree_lock);
 }
 
 struct PageChain* getPageChain(void *tree)
@@ -347,6 +392,34 @@ void cleanPageChain(struct PageChain* inChain)
 	struct PageChain* nextChain = inChain->next;
 	delete inChain;
 	cleanPageChain(nextChain);
+}
+
+void outInOrder(redblacknode<PageRecord>* node)
+{
+	if (node == NULL)
+		return;
+	outInOrder(node->left);
+	printf("%li, ",node->getvalue().getPageNumber());
+	outInOrder(node->right);
+}
+
+void lruInOrder(redblacknode<PageRecordLRU>* node)
+{
+	if (node == NULL)
+		return;
+	lruInOrder(node->left);
+	printf("%li, ",node->getvalue().getLRUNumber());
+	lruInOrder(node->right);
+}
+
+void showInOrder(void* tree)
+{
+	printf("\nPAGE TREE IN ORDER\n\n");
+	PageRecordTree* prTree = static_cast<PageRecordTree*>(tree);
+	outInOrder(prTree->pageRecordTree->root);
+	printf("\n\nLRU TREE IN ORDER\n\n");
+	lruInOrder(prTree->pageRecordLRUTree->root);
+	printf("\n");
 }
 
 }// end extern "C"		
