@@ -11,8 +11,9 @@
 
 //C code that parses a thread
 
-static void replacePage(long pageNumber, struct ThreadResources *thResources)
-{ printf("Introducing page %li\n", pageNumber);
+static void removePage(long pageNumber, struct ThreadResources *thResources)
+{
+	printf("Introducing page %li\n", pageNumber);
 	//find the page with the longest reuse distance,
 	//otherwise find the page with the oldest date
 	//either for this thread or all threads
@@ -35,7 +36,6 @@ static void replacePage(long pageNumber, struct ThreadResources *thResources)
 		currentChain = currentChain->next;
 	}
 	//now get the maximum
-	int pageFound = 0;
 	long maximumReuse = maxNode(instructionTree);
 	printf("Maximum reuse page is %li\n", maximumReuse);
 	if (maximumReuse && locatePageTreePR(maximumReuse,
@@ -87,18 +87,15 @@ static void notInGlobalTree(long pageNumber,
 	struct ThreadGlobal *globals = thResources->globals;
 	struct ThreadLocal *local = thResources->local;
 	pthread_mutex_unlock(&globals->threadGlobalLock);
-	if (faultPage(pageNumber, thResources)) {
+	if (faultPage(pageNumber, thResources) > 0) {
 		pthread_mutex_lock(&globals->threadGlobalLock);
 		if (countPageTree(globals->globalTree) >=
 			CORES * COREMEM / PAGESIZE ) {
-			replacePage(pageNumber, thResources);
-			pthread_mutex_unlock(&globals->threadGlobalLock);
-		} else {
-			insertIntoPageTree(pageNumber, *now,
-				globals->globalTree);
-			pthread_mutex_unlock(&globals->threadGlobalLock);
-			insertIntoPageTree(pageNumber, *now, local->localTree);
-		}
+			removePage(pageNumber, thResources);
+		}	
+		insertIntoPageTree(pageNumber, *now, globals->globalTree);
+		pthread_mutex_unlock(&globals->threadGlobalLock);
+		insertIntoPageTree(pageNumber, *now, local->localTree);
 	}
 	printf("Tree now has %li pages\n", countPageTree(globals->globalTree));
 }

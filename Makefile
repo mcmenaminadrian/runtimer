@@ -30,22 +30,22 @@ runtimer.o: runtimer.c threadhandler.h
 
 # debug build
 debugtimer: druntimer.o dinsttree.o drbpages.o dopttree.o dthreadhandler.o
-	g++ -ggdb -o runtimer -Wall dinsttree.o drbpages.o dopttree.o \
+	g++ -g -o runtimer -Wall dinsttree.o drbpages.o dopttree.o \
 		dthreadhandler.o druntimer.o -lexpat -lpthread
 
 dinsttree.o: insttree.cpp insttree.h redblack.hpp
-	g++ -ggdb -o dinsttree.o -c -Wall insttree.cpp
+	g++ -g -o dinsttree.o -c -Wall insttree.cpp
 
 dthreadhandler.o: threadhandler.c threadhandler.h redblack.hpp
-	gcc -ggdb -o dthreadhandler.o -c -Wall threadhandler.c
+	gcc -g -o dthreadhandler.o -c -Wall threadhandler.c
 
 dopttree.o: opttree.cpp redblack.hpp
-	g++ -ggdb -o dopttree.o -c -Wall opttree.cpp
+	g++ -g -o dopttree.o -c -Wall opttree.cpp
 
 drbpages.o: pages.cpp redblack.hpp
-	g++ -ggdb -o drbpages.o -c -Wall pages.cpp
+	g++ -g -o drbpages.o -c -Wall pages.cpp
 
 druntimer.o: runtimer.c threadhandler.h 
-	gcc -ggdb -o druntimer.o -c -Wall runtimer.c
+	gcc -g -o druntimer.o -c -Wall runtimer.c
 
 

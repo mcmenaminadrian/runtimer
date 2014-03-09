@@ -177,7 +177,7 @@ buildPageChain(struct PageChain** headChain,
 		(struct PageChain*) malloc(sizeof(struct PageChain));
 	nextChain->next = NULL;
 	nextChain->page = node->getvalue().getPageNumber();
-	if (*activeChain == NULL) {
+	if (*activeChain == NULL) { //first in chain
 		*activeChain = nextChain;
 		*headChain = *activeChain;
 	} else {
@@ -248,8 +248,7 @@ void* locatePageTreePR(long pageNumber, void* tree)
 
 void removeFromPageTree(long pageNumber, void* tree)
 {
-	PageRecordTree *prTree;
-	prTree = static_cast<PageRecordTree *>(tree);
+	PageRecordTree *prTree = static_cast<PageRecordTree *>(tree);
 	pthread_mutex_lock(&prTree->tree_lock);
 	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, prTree);
 	if (!pageNode) {
@@ -281,6 +280,7 @@ void removeFromPageTree(long pageNumber, void* tree)
 		throw runtime_error("Attempting to remove non-existant node");
 	}
 	pthread_mutex_unlock(&prTree->tree_lock);
+	delete searchNode;
 }
 
 void* removeOldestFromPageTree(void* tree)
@@ -381,7 +381,7 @@ struct PageChain* getPageChain(void *tree)
 	prTree = static_cast<PageRecordTree *>(tree);
 	buildPageChain(&headChain, &activeChain,
 		prTree->pageRecordTree->root);
-	return activeChain;
+	return headChain;
 }
 
 void cleanPageChain(struct PageChain* inChain)
