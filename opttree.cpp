@@ -184,7 +184,6 @@ void readOPTTree(void *tree, char *path)
 		redblacknode<OPTTreeNode>* rbOPTNode =
 			new redblacknode<OPTTreeNode>(nextPage);
 		optRBTree->insertnode(rbOPTNode, optRBTree->root);
-		//outlineOpt(tree);	
 	}
 	delete[] buffIn;
 }
