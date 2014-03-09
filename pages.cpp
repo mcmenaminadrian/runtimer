@@ -298,7 +298,7 @@ void* removeOldestFromPageTree(void* tree)
 	}
 	vector<long> pagesList = oldest->getvalue().getPageNumbers();
 	if (pagesList.size() > 1) {
-		long pageToKill = *(pagesList.begin());
+		long pageToKill = *(pagesList.begin()); printf("Looking to kill page %li\n", pageToKill);
 		pagesList.erase(pagesList.begin());
 		pageNode = locatePR(pageToKill, prTree);
 		prTree->pageRecordTree->removenode(*pageNode);

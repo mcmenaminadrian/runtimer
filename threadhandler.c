@@ -37,19 +37,16 @@ static void replacePage(long pageNumber, struct ThreadResources *thResources)
 	//now get the maximum
 	int pageFound = 0;
 	do {
-		long maximumReuse = maxNode(instructionTree);
+		long maximumReuse = maxNode(instructionTree); printf("Maximum reuse page is %li\n", maximumReuse);
 		if (maximumReuse) {
-			//lock the global tree hard
-			pthread_mutex_lock(
-				&thResources->globals->threadGlobalLock);
 			if (locatePageTreePR(maximumReuse,
 				thResources->globals->globalTree)) {
 				pageFound = 1;
 				removeFromPageTree(maximumReuse,
 					thResources->globals->globalTree);
+				removeFromPageTree(maximumReuse,
+					thResources->local->localTree);
 			}
-			pthread_mutex_unlock(
-				&thResources->globals->threadGlobalLock);
 		} else {
 			break;
 		}
@@ -57,9 +54,7 @@ static void replacePage(long pageNumber, struct ThreadResources *thResources)
 
 	//if we didn't find the page, kill the oldest page
 	if (pageFound == 0) {
-		pthread_mutex_lock(&thResources->globals->threadGlobalLock);
 		removeOldestFromPageTree(thResources->globals->globalTree);
-		pthread_mutex_unlock(&thResources->globals->threadGlobalLock);
 	}
 	freeInstTree(instructionTree);
 }

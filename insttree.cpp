@@ -55,7 +55,7 @@ void insertIntoTree(long pageNumber, unsigned long instruction, void* tree)
 	instTree =
 	static_cast<redblacktree<redblacknode<InstructionOrder> >*>(tree);
 	InstructionOrder instOrder(instruction, pageNumber);
-	redblacknode<InstructionOrder>* =
+	redblacknode<InstructionOrder>* instOrderNode =
 		new redblacknode<InstructionOrder>(instOrder);
 	instTree->insertnode(instOrderNode, instTree->root);
 }
