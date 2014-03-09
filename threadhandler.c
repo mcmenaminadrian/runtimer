@@ -19,7 +19,6 @@ static void replacePage(long pageNumber, struct ThreadResources *thResources)
 	struct PageChain *currentChain =
 		getPageChain(thResources->local->localTree);
 	void* instructionTree = createInstructionTree();
-	showInOrder(thResources->local->localTree);
 	while (currentChain) {
 		long instructionNext =
 			nextInChain(currentChain->page,

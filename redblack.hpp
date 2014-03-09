@@ -462,7 +462,7 @@ template <typename NODE> NODE* redblacktree<NODE>::min() const
 		return NULL;
 	NODE* p = root;
 	do {
-		if (!p->left)
+		if (p->left == NULL)
 			return p;
 		p = p->left;
 	} while(true);
@@ -474,7 +474,7 @@ template <typename NODE> NODE* redblacktree<NODE>::max() const
 		return NULL;
 	NODE* p = root;
 	do {
-		if (!p->right)
+		if (p->right == NULL)
 			return p;
 		p = p->right;
 	} while(true);

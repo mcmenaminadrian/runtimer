@@ -138,6 +138,24 @@ void* createOPTTree(void)
 	return static_cast<void *>(optTree);
 }
 
+void optInOrder(redblacknode<OPTTreeNode>* node)
+{
+	if (node == NULL)
+		return;
+	optInOrder(node->left);
+	printf("%li, ", node->getvalue().getPage());
+	optInOrder(node->right);
+}
+
+void outlineOpt(void* tree)
+{
+	redblacktree<redblacknode<OPTTreeNode> >* optTree;
+	optTree = static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
+	printf("\nOPT Tree\n\n");
+	optInOrder(optTree->root);
+	printf("\n");
+}
+
 void readOPTTree(void *tree, char *path)
 {
 	int longLength = sizeof(unsigned long);
@@ -150,12 +168,12 @@ void readOPTTree(void *tree, char *path)
 	ifstream inFile(path, ifstream::binary);
 	while (inFile && inFile.eof() == false) {
 		inFile.read(buffIn, longLength);
-		pageNumberRead = *((unsigned long*)buffIn);	
+		pageNumberRead = *((unsigned long*)buffIn);
 		OPTTreeNode nextPage(pageNumberRead);
 		InstructionChain* addPoint = nextPage.getHead();
 		do {
 			inFile.read(buffIn, longLength);
-			nextInstructionRead = *((unsigned long*)buffIn); 
+			nextInstructionRead = *((unsigned long*)buffIn);
 			if (nextInstructionRead != 0) {
 				InstructionChain* nextLink =
 				new InstructionChain(nextInstructionRead);
@@ -163,8 +181,10 @@ void readOPTTree(void *tree, char *path)
 					nextPage.pushToEnd(addPoint, nextLink);
 			}
 		} while (nextInstructionRead != 0);
-		redblacknode<OPTTreeNode> rbOPTNode(nextPage);
-		optRBTree->insertnode(&rbOPTNode, optRBTree->root);
+		redblacknode<OPTTreeNode>* rbOPTNode =
+			new redblacknode<OPTTreeNode>(nextPage);
+		optRBTree->insertnode(rbOPTNode, optRBTree->root);
+		//outlineOpt(tree);	
 	}
 	delete[] buffIn;
 }
@@ -208,22 +228,6 @@ void removeOPTTree(void* tree)
 	cleanOPTTree(optTree->root);
 }	
 	
-void optInOrder(redblacknode<OPTTreeNode>* node)
-{
-	if (node == NULL)
-		return;
-	optInOrder(node->left);
-	printf("%li, ", node->getvalue().getPage();
-	optInOrder(node->right);
-}
-
-void outlineOpt(void* tree)
-{
-	redblacktree<redblacknode<OPTTreeNode> >* optTree;
-	optTree = static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
-	optInOrder(optTree->root);
-}
-
 } //end extern "C"
 
 				
