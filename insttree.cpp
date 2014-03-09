@@ -28,7 +28,7 @@ bool InstructionOrder::operator==(InstructionOrder& iO) const
 
 bool InstructionOrder::operator<(InstructionOrder& iO) const
 {
-	return (pageNumber < iO.instruction);
+	return (instruction < iO.instruction);
 }
 
 const unsigned long InstructionOrder::getInstruction(void) const
