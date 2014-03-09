@@ -97,7 +97,6 @@ static void notInGlobalTree(long pageNumber,
 		pthread_mutex_unlock(&globals->threadGlobalLock);
 		insertIntoPageTree(pageNumber, *now, local->localTree);
 	}
-	printf("Tree now has %li pages\n", countPageTree(globals->globalTree));
 }
 	
 static void XMLCALL

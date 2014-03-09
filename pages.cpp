@@ -301,15 +301,24 @@ void* removeOldestFromPageTree(void* tree)
 		long pageToKill = *(pagesList.begin()); printf("Looking to kill page %li\n", pageToKill);
 		pagesList.erase(pagesList.begin());
 		pageNode = locatePR(pageToKill, prTree);
-		prTree->pageRecordTree->removenode(*pageNode);
+		if(!(prTree->pageRecordTree->removenode(*pageNode))) {
+			throw runtime_error(
+				"Attempted to remove non-existant node");
+		}
 	} else {
 		//have to kill LRU node also
 		long pageToKill = *(pagesList.begin());
 		pagesList.resize(0);
 		lruNode = locateLRU(oldest->getvalue().getLRUNumber(), prTree);
-		prTree->pageRecordLRUTree->removenode(*lruNode);
+		if (!(prTree->pageRecordLRUTree->removenode(*lruNode))) {
+			throw runtime_error(
+				"Attempted to remove non-existant node");
+		}
 		pageNode = locatePR(pageToKill, prTree);
-		prTree->pageRecordTree->removenode(*pageNode);	
+		if (!(prTree->pageRecordTree->removenode(*pageNode))) {
+			throw runtime_error(
+				"Attempted to remove non-existant node");
+		}
 	}
 	pthread_mutex_unlock(&prTree->tree_lock);
 	return oldest;

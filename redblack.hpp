@@ -53,8 +53,8 @@ class redblacktree {
 		void rotate1(NODE*);
 		void transform2(NODE*);
 		void free(NODE*);
-		NODE* maxleft(NODE*) const;
-		NODE* minright(NODE*) const;
+		NODE* maxsuc(NODE*) const;
+		NODE* minsuc(NODE*) const;
 		int countup(NODE*) const;
 	public:
 		NODE* root;
@@ -140,7 +140,6 @@ template <typename T> redblacknode<T>* redblacknode<T>::sibling() const
 	else
 		return up->left;
 }
-
 
 template <typename T> redblacknode<T>* redblacknode<T>::grandparent() const
 {
@@ -447,11 +446,11 @@ template <typename NODE> NODE* redblacktree<NODE>::locatenode(NODE* v,
 		return locatenode(v, node->right);
 }
 
-template <typename NODE> NODE* redblacktree<NODE>::minright(NODE* node) const
+template <typename NODE> NODE* redblacktree<NODE>::minsuc(NODE* node) const
 {
 
 	if (node->left)
-		return minright(node->left);
+		return minsuc(node->left);
 	else
 		return node;
 }
@@ -497,10 +496,10 @@ template <typename NODE> const int redblacktree<NODE>::count() const
 	return countup(root);
 }
 
-template <typename NODE> NODE* redblacktree<NODE>::maxleft(NODE* node) const
+template <typename NODE> NODE* redblacktree<NODE>::maxsuc(NODE* node) const
 {
 	if (node->right)
-		return maxleft(node->right);
+		return maxsuc(node->right);
 	else
 		return node;
 }
@@ -527,9 +526,9 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 	NODE* lefty = located->left;
 	NODE* righty =  located->right;
 	if (lefty && righty){
-		altnode = maxleft(located->left);
+		altnode = maxsuc(located->left);
 		if (altnode->colour == 0) 
-			altnode = minright(located->right);
+			altnode = minsuc(located->right);
 		located->assign(altnode);
 		located = altnode; 
 		lefty = located->left;
