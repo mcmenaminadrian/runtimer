@@ -513,6 +513,72 @@ template <typename NODE> bool redblacktree<NODE>::find(NODE& v) const
 		return false;
 }
 
+template <typename NODE> void redblacktree<NODE>::leftrotate(NODE* rnode)
+{
+}
+
+template <typename NODE> void redblacktree<NODE>::rightrotate(NODE* rnode)
+{
+}
+
+template <typename NODE> void redblacktree<NODE>::deletefixup(NODE* xnode)
+{
+	NODE* wnode = NULL;
+	while (xnode != root && xnode->colour == 0) {
+		if (xnode == xnode->up->left) {
+			wnode = xnode->up->right;
+			if (wnode->colour == 1) {
+				wnode->colour = 0;
+				xnode->up->colour = 1;
+				leftrotate(xnode->up);
+				wnode = xnode->up->right;
+			}
+			if (wnode->left->colour == 0 &&
+				wnode->right->colour == 0) {
+				wnode->colour = 1;
+				xnode = xnode->up;
+			} else {
+				if (wnode->right->colour == 0) {
+					wnode->left->color = 0
+					wnode->colour = 1;
+					rightrotate(wnode);
+					wnode = xnode->up->right;
+				}
+				wnode->colour = xnode->up->colour;
+				xnode->up->colour = 0;
+				wnode->right->colour = 0;
+				leftrotate(xnode->up);
+				xnode = root;
+			}
+		} else {
+			wnode = xnode->up->left;
+			if (wnode->colour == 1) {
+				wnode->colour = 0;
+				xnode->up->colour = 1;
+				rightrotate(xnode->up);
+				wnode = xnode->up->left;
+			}
+			if (wnode->right->colour == 0 &&
+				wnode->left->colour == 0) {
+				wnode->colour = 1;
+				xnode = xnode->up;
+			} else {
+				if (wnode->left->colour == 0) {
+					wnode->right->color = 0
+					wnode->colour = 1;
+					leftrotate(wnode);
+					wnode = xnode->up->left;
+				}
+				wnode->colour = xnode->up->colour;
+				xnode->up->colour = 0;
+				wnode->left->colour = 0;
+				rightrotate(xnode->up);
+				xnode = root;
+			}
+		}
+	}
+}
+
 template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 {
 	//basic checks then find node
@@ -543,13 +609,13 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 		anonnode->up = located->up;
 	}
 
-	if (located->par == NULL) {
+	if (located->up == NULL) {
 		root = anonnode;
 	} else {
-		if (altnode->par && altnode = altnode->par->left){
-			altnode->par->left = anonnode;
-		} else if (altnode->par) {
-			altnode->par->right = anonnode;
+		if (altnode->up && altnode == altnode->up->left){
+			altnode->up->left = anonnode;
+		} else if (altnode->up) {
+			altnode->up->right = anonnode;
 		}
 	}
 
@@ -558,6 +624,7 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 	}
 
 	if (altnode->colour == 0) {
+		deletefixup(anonnode);
 		//fixup code goes here
 	}
 	delete altnode;
