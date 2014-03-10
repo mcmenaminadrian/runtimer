@@ -515,6 +515,57 @@ template <typename NODE> bool redblacktree<NODE>::find(NODE& v) const
 
 template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 {
+	//basic checks then find node
+	if (&v == NULL) {
+		throw invalid_argument("Attempted to remove NULL node");
+	}
+	NODE* located = locatenode(&v, root);
+	if (!located) {
+		return false;
+	}
+	NODE* altnode = NULL;
+	NODE* anonnode = NULL;
+	if (located->left == NULL || located->right == NULL) {
+		altnode = located;
+	} else {
+		if (located->right) {
+			altnode = minsuc(located->right);
+		}
+	}
+
+	if (located->left) {
+		anonnode = located->left;
+	} else {
+		anonnode = located->right;
+	}
+	
+	if (anonnode) {
+		anonnode->up = located->up;
+	}
+
+	if (located->par == NULL) {
+		root = anonnode;
+	} else {
+		if (altnode->par && altnode = altnode->par->left){
+			altnode->par->left = anonnode;
+		} else if (altnode->par) {
+			altnode->par->right = anonnode;
+		}
+	}
+
+	if (altnode != located) {
+		located->assign(altnode);
+	}
+
+	if (altnode->colour == 0) {
+		//fixup code goes here
+	}
+	delete altnode;
+	return true;
+}
+/*
+template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
+{
 	if (&v == NULL) {
 		throw invalid_argument("Attempted to remove NULL node");
 	}
@@ -675,6 +726,7 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 
 	}while(true);
 }
+*/
 
 template <typename T> void streamrbt(ostream& os, redblacknode<T>* node)
 {
