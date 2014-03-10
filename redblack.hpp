@@ -56,6 +56,9 @@ class redblacktree {
 		NODE* maxsuc(NODE*) const;
 		NODE* minsuc(NODE*) const;
 		int countup(NODE*) const;
+		void leftrotate(NODE*);
+		void rightrotate(NODE*);
+		void deletefixup(NODE*);
 	public:
 		NODE* root;
 		NODE* locatenode(NODE*, NODE*) const;  
@@ -513,13 +516,48 @@ template <typename NODE> bool redblacktree<NODE>::find(NODE& v) const
 		return false;
 }
 
-template <typename NODE> void redblacktree<NODE>::leftrotate(NODE* rnode)
+template <typename NODE> void redblacktree<NODE>::leftrotate(NODE* xnode)
 {
+	NODE* ynode = xnode->right;
+	xnode->right = ynode->left;
+	if (ynode->left != NULL) {
+		ynode->up->left = xnode;
+	}
+	ynode->up = xnode->up;
+	if (xnode->up == NULL) {
+		root = ynode;
+	} else {
+		if (xnode == xnode->up->left) {
+			xnode->up->left = ynode;
+		} else {
+			xnode->up->right = ynode;
+		}
+	}
+	ynode->left = xnode;
+	xnode->up = ynode;
 }
 
-template <typename NODE> void redblacktree<NODE>::rightrotate(NODE* rnode)
-{
-}
+template <typename NODE> void redblacktree<NODE>::rightrotate(NODE* xnode)
+{/*
+	NODE* ynode = xnode->right;
+	xnode->right = ynode->left;
+	if (ynode->left != NULL) {
+		ynode->up->left = xnode;
+	}
+	ynode->up = xnode->up;
+	if (xnode->up = NULL) {
+		root = ynode;
+	} else {
+		if (xnode = xnode->up->left) {
+			xnode->up->left = ynode;
+		} else {
+			xnode->up->right = ynode;
+		}
+	}
+	ynode->left = xnode;
+	xnode->up = ynode;
+
+*/}
 
 template <typename NODE> void redblacktree<NODE>::deletefixup(NODE* xnode)
 {
@@ -539,7 +577,7 @@ template <typename NODE> void redblacktree<NODE>::deletefixup(NODE* xnode)
 				xnode = xnode->up;
 			} else {
 				if (wnode->right->colour == 0) {
-					wnode->left->color = 0
+					wnode->left->colour = 0;
 					wnode->colour = 1;
 					rightrotate(wnode);
 					wnode = xnode->up->right;
@@ -564,7 +602,7 @@ template <typename NODE> void redblacktree<NODE>::deletefixup(NODE* xnode)
 				xnode = xnode->up;
 			} else {
 				if (wnode->left->colour == 0) {
-					wnode->right->color = 0
+					wnode->right->colour = 0;
 					wnode->colour = 1;
 					leftrotate(wnode);
 					wnode = xnode->up->left;
