@@ -519,50 +519,39 @@ template <typename NODE> bool redblacktree<NODE>::find(NODE& v) const
 template <typename NODE> void redblacktree<NODE>::leftrotate(NODE* xnode)
 {
 	NODE* ynode = xnode->right;
-	xnode->right = ynode->left;
-	if (ynode->left != NULL) {
-		ynode->up->left = xnode;
+	if (ynode) {
+		NODE* tmp = new NODE(xnode->getvalue());
+		tmp->assign(xnode);
+		tmp->left = xnode->left;
+		tmp->right = ynode->left;
+		tmp->up = xnode;
+		xnode->assign(ynode);
+		xnode->left = tmp;
+		xnode->right = ynode->right;
+		delete ynode;
 	}
-	ynode->up = xnode->up;
-	if (xnode->up == NULL) {
-		root = ynode;
-	} else {
-		if (xnode == xnode->up->left) {
-			xnode->up->left = ynode;
-		} else {
-			xnode->up->right = ynode;
-		}
-	}
-	ynode->left = xnode;
-	xnode->up = ynode;
 }
 
 template <typename NODE> void redblacktree<NODE>::rightrotate(NODE* xnode)
-{/*
-	NODE* ynode = xnode->right;
-	xnode->right = ynode->left;
-	if (ynode->left != NULL) {
-		ynode->up->left = xnode;
+{
+	NODE* ynode = xnode->up;
+	if (ynode) {
+		NODE* tmp = new NODE(ynode->getvalue());
+		tmp->assign(ynode);
+		tmp->left = xnode->right;
+		tmp->right = ynode->right;
+		ynode->assign(xnode);
+		ynode->left = xnode->left;
+		ynode->right = tmp;
+		tmp->up = ynode;
+		delete xnode;
 	}
-	ynode->up = xnode->up;
-	if (xnode->up = NULL) {
-		root = ynode;
-	} else {
-		if (xnode = xnode->up->left) {
-			xnode->up->left = ynode;
-		} else {
-			xnode->up->right = ynode;
-		}
-	}
-	ynode->left = xnode;
-	xnode->up = ynode;
-
-*/}
+}
 
 template <typename NODE> void redblacktree<NODE>::deletefixup(NODE* xnode)
 {
 	NODE* wnode = NULL;
-	while (xnode != root && xnode->colour == 0) {
+	while (xnode && xnode != root && xnode->colour == 0) {
 		if (xnode == xnode->up->left) {
 			wnode = xnode->up->right;
 			if (wnode->colour == 1) {
