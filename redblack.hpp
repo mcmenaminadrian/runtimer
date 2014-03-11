@@ -655,7 +655,7 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 		if (ynode && ynode == ynode->up->left){
 			ynode->up->left = xnode;
 		} else if (xnode) {
-			xnode->up->right = xnodenode;
+			xnode->up->right = xnode;
 		}
 	}
 
