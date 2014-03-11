@@ -623,49 +623,51 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 	if (&v == NULL) {
 		throw invalid_argument("Attempted to remove NULL node");
 	}
-	NODE* located = locatenode(&v, root);
-	if (!located) {
+	NODE* znode = locatenode(&v, root);
+	if (!znode) {
 		return false;
 	}
-	NODE* altnode = NULL;
-	NODE* anonnode = NULL;
-	if (located->left == NULL || located->right == NULL) {
-		altnode = located;
+	NODE* ynode = NULL;
+	NODE* xnode = NULL;
+	if (znode->left == NULL || znode->right == NULL) {
+		ynode = znode;
 	} else {
-		if (located->right) {
-			altnode = minsuc(located->right);
+		if (znode->right) {
+			ynode = minsuc(znode->right); //successor
 		}
 	}
 
-	if (located->left) {
-		anonnode = located->left;
+	if (ynode->left) {
+		xnode = ynode->left;
 	} else {
-		anonnode = located->right;
+		if (ynode->right) {
+			xnode = ynode->right;
+		}
 	}
 	
-	if (anonnode) {
-		anonnode->up = located->up;
+	if (xnode) {
+		xnode->up = ynode->up;
 	}
 
-	if (located->up == NULL) {
-		root = anonnode;
+	if (ynode->up == NULL) {
+		root = xnode;
 	} else {
-		if (altnode->up && altnode == altnode->up->left){
-			altnode->up->left = anonnode;
-		} else if (altnode->up) {
-			altnode->up->right = anonnode;
+		if (ynode && ynode == ynode->up->left){
+			ynode->up->left = xnode;
+		} else if (xnode) {
+			xnode->up->right = xnodenode;
 		}
 	}
 
-	if (altnode != located) {
-		located->assign(altnode);
+	if (ynode != znode) {
+		znode->assign(ynode);
 	}
 
-	if (altnode->colour == 0) {
-		deletefixup(anonnode);
+	if (!ynode || ynode->colour == 0) {
+		deletefixup(xnode);
 		//fixup code goes here
 	}
-	delete altnode;
+	delete ynode;
 	return true;
 }
 /*
