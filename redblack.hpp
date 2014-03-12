@@ -640,11 +640,11 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 
 	if (ynode->up == NULL) {
 		root = xnode;
-	} else {
-		if (ynode && ynode == ynode->up->left){
+	} else if (ynode) {
+		if (ynode == ynode->up->left){
 			ynode->up->left = xnode;
-		} else if (xnode) {
-			xnode->up->right = xnode;
+		} else {
+			ynode->up->right = xnode;
 		}
 	}
 

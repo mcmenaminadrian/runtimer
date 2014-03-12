@@ -70,15 +70,9 @@ long maxNode(void* tree)
 	farNode = instTree->max();
 	//allow repeated calls of maxNode
 	if (farNode) {
-		InstructionOrder iO = farNode->getvalue();
-		InstructionOrder delIO(iO.getInstruction(),
-			iO.getPageNumber());
-		redblacknode<InstructionOrder> delNode(delIO);
-		instTree->removenode(delNode);
-		return iO.getPageNumber();
-	} else {
-		return 0;
+		return (farNode->getvalue()).getPageNumber();
 	}
+	return 0;
 }
 
 void freeInstTree(void* tree)
