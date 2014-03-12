@@ -53,8 +53,8 @@ class redblacktree {
 		void rotate1(NODE*);
 		void transform2(NODE*);
 		void free(NODE*);
-		NODE* maxsuc(NODE*) const;
 		NODE* minsuc(NODE*) const;
+		NODE* successor(NODE*) const;
 		int countup(NODE*) const;
 		void leftrotate(NODE*);
 		void rightrotate(NODE*);
@@ -451,11 +451,23 @@ template <typename NODE> NODE* redblacktree<NODE>::locatenode(NODE* v,
 
 template <typename NODE> NODE* redblacktree<NODE>::minsuc(NODE* node) const
 {
-
 	if (node->left)
 		return minsuc(node->left);
 	else
 		return node;
+}
+
+template <typename NODE> NODE* redblacktree<NODE>::successor(NODE* node) const
+{
+	if (node->right) {
+		return minsuc(node->right);
+	}
+	NODE* successor = node->up;
+	while (successor && node == successor->right) {
+		node = successor;
+		successor = successor->up;
+	}
+	return successor;
 }
 
 template <typename NODE> NODE* redblacktree<NODE>::min() const
@@ -497,14 +509,6 @@ template <typename NODE> int
 template <typename NODE> const int redblacktree<NODE>::count() const
 {
 	return countup(root);
-}
-
-template <typename NODE> NODE* redblacktree<NODE>::maxsuc(NODE* node) const
-{
-	if (node->right)
-		return maxsuc(node->right);
-	else
-		return node;
 }
 
 template <typename NODE> bool redblacktree<NODE>::find(NODE& v) const
@@ -633,7 +637,7 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 		ynode = znode;
 	} else {
 		if (znode->right) {
-			ynode = minsuc(znode->right); //successor
+			ynode = successor(znode);
 		}
 	}
 
