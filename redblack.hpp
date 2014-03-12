@@ -550,23 +550,30 @@ template <typename NODE> void redblacktree<NODE>::rightrotate(NODE* xnode)
 
 template <typename NODE> void redblacktree<NODE>::deletefixup(NODE* xnode)
 {
+	if (xnode == NULL) {
+		return;
+	}
 	NODE* wnode = NULL;
 	while (xnode && xnode != root && xnode->colour == 0) {
 		if (xnode == xnode->up->left) {
 			wnode = xnode->up->right;
-			if (wnode->colour == 1) {
+			if (wnode && wnode->colour == 1) {
 				wnode->colour = 0;
 				xnode->up->colour = 1;
 				leftrotate(xnode->up);
 				wnode = xnode->up->right;
 			}
-			if (wnode->left->colour == 0 &&
-				wnode->right->colour == 0) {
+			if ((!(wnode->left) || wnode->left->colour == 0) &&
+				(!(wnode->right) || wnode->right->colour == 0))
+			{
 				wnode->colour = 1;
 				xnode = xnode->up;
 			} else {
-				if (wnode->right->colour == 0) {
-					wnode->left->colour = 0;
+				if (!(wnode->right) || wnode->right->colour==0)
+				{
+					if (wnode->left) {
+						wnode->left->colour = 0;
+					}
 					wnode->colour = 1;
 					rightrotate(wnode);
 					wnode = xnode->up->right;
@@ -579,19 +586,23 @@ template <typename NODE> void redblacktree<NODE>::deletefixup(NODE* xnode)
 			}
 		} else {
 			wnode = xnode->up->left;
-			if (wnode->colour == 1) {
+			if (wnode && wnode->colour == 1) {
 				wnode->colour = 0;
 				xnode->up->colour = 1;
 				rightrotate(xnode->up);
 				wnode = xnode->up->left;
 			}
-			if (wnode->right->colour == 0 &&
-				wnode->left->colour == 0) {
+			if ((!(wnode-> right) || wnode->right->colour == 0) &&
+				(!(wnode->left) || wnode->left->colour == 0))
+			{
 				wnode->colour = 1;
 				xnode = xnode->up;
 			} else {
-				if (wnode->left->colour == 0) {
-					wnode->right->colour = 0;
+				if (!(wnode->left) || wnode->left->colour == 0)
+				{
+					if (wnode->right) {	
+						wnode->right->colour = 0;
+					}
 					wnode->colour = 1;
 					leftrotate(wnode);
 					wnode = xnode->up->left;
@@ -640,7 +651,7 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 
 	if (ynode->up == NULL) {
 		root = xnode;
-	} else if (ynode) {
+	} else {
 		if (ynode == ynode->up->left){
 			ynode->up->left = xnode;
 		} else {
@@ -659,170 +670,6 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 	delete ynode;
 	return true;
 }
-/*
-template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
-{
-	if (&v == NULL) {
-		throw invalid_argument("Attempted to remove NULL node");
-	}
-	NODE* located = locatenode(&v, root);
-	NODE* altnode = NULL;
-	if (located == NULL)
-		return false;
-	
-	NODE* lefty = located->left;
-	NODE* righty =  located->right;
-	if (lefty && righty){
-		altnode = maxsuc(located->left);
-		if (altnode->colour == 0) 
-			altnode = minsuc(located->right);
-		located->assign(altnode);
-		located = altnode; 
-		lefty = located->left;
-		righty = located->right;
-	}
-
-	//located is now a node with only one child at most
-	NODE* par = located->up;
-	NODE* sibling = located->sibling();
-	NODE* follow = NULL;
-	if (lefty)
-		follow = lefty;
-	else
-		follow = righty;
-
-	if (par) {
-		if (par->left == located) {
-			par->left = follow;
-		}
-		else {
-			par->right = follow;
-		}
-	}
-	else
-		root = follow;
-	
-	if (follow)
-		follow->up = par;
-
-	//easy to remove a red
-	if (located->colour == 1) {
-		delete located;
-		return true;
-	}
-
-	//also easy if follow is red
-	if (follow && follow->colour == 1) {
-		follow->colour = 0;
-		delete located;
-		return true;
-	}
-
-	if (!follow && !par)
-	{
-		//tree is now empty
-		delete located;
-		root = NULL;
-		return true;
-	}
-
-	//loop through the fixes
-	do {
-		if (sibling == root)
-		{
-			delete located;
-			return true;
-		}
-		//test sibling status
-		if (sibling) {
-			//red?
-			if (sibling->colour == 1) {
-				bool leftist = (par->left == sibling);
-				rotate2a(sibling);
-				sibling->colour = 0;
-				par->colour = 1;
-				if (follow)
-					sibling = follow->sibling(); 
-				else {
-					if (leftist)
-						sibling = par->left;
-					else
-						sibling = par->right;
-				}
-			}
-			//case above can fall directly into case below
-			if (par->colour == 1) {
-				if (sibling->bothchildrenblack()) {
-					sibling->colour = 1;
-					par->colour = 0;
-					delete located;
-					return true;
-				}
-			}
-			else if (sibling->bothchildrenblack()){
-				sibling->colour = 1;
-				follow = par;
-				sibling = follow->sibling();
-				par = follow->up;
-				if (par == NULL) {
-					//at root can go no further
-					delete located;
-					return true;
-				}
-				continue;
-			}
-			if (par->right == sibling) {
-				if (sibling->left &&
-					sibling->left->colour == 1
-					&& (sibling->right == NULL ||
-					(sibling->right &&
-					sibling->right->colour == 0))){
-						rotate3(sibling);
-						sibling = sibling->up;
-						continue;
-					}
-				else {
-					transform2(sibling);
-					delete located;
-					return true;
-				}
-			}
-			else if (par->left == sibling) {
-				if (sibling->right &&
-					sibling->right->colour == 1 &&
-					(sibling->left == NULL ||
-					(sibling->left &&
-					sibling->left->colour == 0))){
-						rotate3(sibling);
-						sibling = sibling->up;
-						continue;
-					}
-				else {
-					transform2(sibling);
-					delete located;
-					return true;
-				}
-			}
-		} else {
-			if (par->colour == 1) {
-				par->colour = 0;
-				delete located;
-				return true;
-			}
-			else { 
-				if (!follow)
-					follow = located->up;	
-			else
-					follow = follow->up;
-				par = follow->up;
-			}
-		}
-		if (follow)
-			sibling = follow->sibling();
-
-	}while(true);
-}
-*/
 
 template <typename T> void streamrbt(ostream& os, redblacknode<T>* node)
 {
