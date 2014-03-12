@@ -522,7 +522,6 @@ template <typename NODE> void redblacktree<NODE>::leftrotate(NODE* xnode)
 	if (ynode) {
 		NODE* tmp = new NODE(xnode->getvalue());
 		tmp->assign(xnode);
-		printf("Node is at %lu with value %li\n", tmp, &(tmp->getvalue()));
 		tmp->left = xnode->left;
 		tmp->right = ynode->left;
 		tmp->up = xnode;
@@ -539,7 +538,6 @@ template <typename NODE> void redblacktree<NODE>::rightrotate(NODE* xnode)
 	if (ynode) {
 		NODE* tmp = new NODE(ynode->getvalue());
 		tmp->assign(ynode);
-		printf("Node is at %lu with value %li\n", tmp, &(tmp->getvalue()));
 		tmp->left = xnode->right;
 		tmp->right = ynode->right;
 		ynode->assign(xnode);
