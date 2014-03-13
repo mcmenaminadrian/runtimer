@@ -58,7 +58,8 @@ class redblacktree {
 		int countup(NODE*) const;
 		void leftrotate(NODE*);
 		void rightrotate(NODE*);
-		void deletefixup(NODE*);
+		void fixupx(NODE*);
+		void fixupp(NODE*);
 	public:
 		NODE* root;
 		NODE* locatenode(NODE*, NODE*) const;  
@@ -552,32 +553,30 @@ template <typename NODE> void redblacktree<NODE>::rightrotate(NODE* xnode)
 	}
 }
 
-template <typename NODE> void redblacktree<NODE>::deletefixup(NODE* xnode)
+template <typename NODE> void redblacktree<NODE>::fixupp(NODE* pnode)
 {
-	if (xnode == NULL) {
-		return;
-	}
+	//do nothing for now
+}
+
+template <typename NODE> void redblacktree<NODE>::fixupx(NODE* xnode)
+{ /*
 	NODE* wnode = NULL;
-	while (xnode && xnode != root && xnode->colour == 0) {
+	while (xnode != root && xnode->colour == 0) {
 		if (xnode == xnode->up->left) {
 			wnode = xnode->up->right;
 			if (wnode && wnode->colour == 1) {
 				wnode->colour = 0;
 				xnode->up->colour = 1;
-				leftrotate(xnode->up);
+				leftrotate(xnode);
 				wnode = xnode->up->right;
 			}
-			if ((!(wnode->left) || wnode->left->colour == 0) &&
-				(!(wnode->right) || wnode->right->colour == 0))
-			{
+			if (wnode->left->colour == 0
+				&& wnode->right->colour == 0) {
 				wnode->colour = 1;
 				xnode = xnode->up;
 			} else {
-				if (!(wnode->right) || wnode->right->colour==0)
-				{
-					if (wnode->left) {
-						wnode->left->colour = 0;
-					}
+				if (wnode->right->colour == 0) {
+					wnode->left->colour = 0;
 					wnode->colour = 1;
 					rightrotate(wnode);
 					wnode = xnode->up->right;
@@ -589,37 +588,35 @@ template <typename NODE> void redblacktree<NODE>::deletefixup(NODE* xnode)
 				xnode = root;
 			}
 		} else {
-			wnode = xnode->up->left;
-			if (wnode && wnode->colour == 1) {
-				wnode->colour = 0;
-				xnode->up->colour = 1;
-				rightrotate(xnode->up);
+			if (xnode == xnode->up->right) {
 				wnode = xnode->up->left;
-			}
-			if ((!(wnode-> right) || wnode->right->colour == 0) &&
-				(!(wnode->left) || wnode->left->colour == 0))
-			{
-				wnode->colour = 1;
-				xnode = xnode->up;
-			} else {
-				if (!(wnode->left) || wnode->left->colour == 0)
-				{
-					if (wnode->right) {	
-						wnode->right->colour = 0;
-					}
-					wnode->colour = 1;
-					leftrotate(wnode);
+				if (wnode->colour == 1) {
+					wnode->colour = 0;
+					xnode->up->colour = 1;
+					rightrotate(xnode);
 					wnode = xnode->up->left;
 				}
-				wnode->colour = xnode->up->colour;
-				xnode->up->colour = 0;
-				wnode->left->colour = 0;
-				rightrotate(xnode->up);
-				xnode = root;
+				if (wnode->right->colour == 0
+					&& wnode->left->colour == 0) {
+					wnode->colour = 1;
+					xnode = xnode->up;
+				} else { 
+					if (wnode->left->colour == 0) {
+						wnode->right->colour = 0;
+						wnode->colour = 1;
+						leftrotate(wnode);
+						wnode = xnode->up->left;
+					}
+					wnode->colour = xnode->up->colour;
+					xnode->up->colour = 0;
+					wnode->left->colour = 0;
+					rightrotate(xnode->up);
+					xnode = root;
+				}
 			}
 		}
-	}
-}
+	} */
+}	
 
 template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 {
@@ -633,6 +630,8 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 	}
 	NODE* ynode = NULL;
 	NODE* xnode = NULL;
+	NODE* pnode = NULL;
+
 	if (znode->left == NULL || znode->right == NULL) {
 		ynode = znode;
 	} else {
@@ -658,8 +657,10 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 	} else {
 		if (ynode == ynode->up->left){
 			ynode->up->left = xnode;
+			pnode = ynode->up->left;
 		} else {
 			ynode->up->right = xnode;
+			pnode = ynode->up->right;
 		}
 	}
 
@@ -668,8 +669,11 @@ template <typename NODE> bool redblacktree<NODE>::removenode(NODE& v)
 	}
 
 	if (!ynode || ynode->colour == 0) {
-		deletefixup(xnode);
-		//fixup code goes here
+		if (xnode) {
+			fixupx(xnode);
+		} else {
+			fixupp(pnode);
+		}
 	}
 	delete ynode;
 	return true;

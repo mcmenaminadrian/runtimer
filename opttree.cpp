@@ -190,17 +190,14 @@ void readOPTTree(void *tree, char *path)
 
 long
 findNextInstruction(unsigned long currentInstruction, InstructionChain* chain)
-{ 
-	if (chain == NULL) {
-		return LONG_MAX;
-	} else {
-		if (chain->getInstruction() < currentInstruction) {
-			return findNextInstruction(currentInstruction,
-				chain->getNext());
-		} else {
-			return chain->getInstruction();
+{
+	while (chain->getInstruction() < currentInstruction) {
+		chain = chain->getNext();
+		if (chain == NULL) {
+			return LONG_MAX;
 		}
 	}
+	return chain->getInstruction(); 
 }
 
 
