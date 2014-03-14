@@ -10,25 +10,30 @@
 struct ThreadRecord *startTR = NULL;
 static char outputprefix[BUFFSZ];
 
-struct ThreadRecord*
-	mapThread(struct ThreadRecord **root, int tNum, char *fileName)
+struct ThreadRecord* createThreadRecord(int tNum, char* fileName)
 {
-	if (*root == NULL) {
-		struct ThreadRecord *newThread =
-			(struct ThreadRecord*)
-				malloc( sizeof (struct ThreadRecord));
-		if (!newThread) {
-			fprintf(stderr, "Could not create threadRecord.\n");
-			return NULL;
+	struct ThreadRecord* newRecord = malloc(sizeof (struct ThreadRecord));
+	if (!newRecord) {
+		fprintf(stderr, "Could not create ThreadRecord.\n");
+		return NULL;
+	}
+	newRecord->number = tNum;
+	strcpy(newRecord->path, fileName);
+	newRecord->next = NULL;
+	newRecord->local = NULL;
+	return newRecord;
+}
+
+void mapThread(struct ThreadRecord **root, int tNum, char *fileName)
+{
+	if (*root) {
+		while ((*root)->next) {
+			*root = (*root)->next;
 		}
-		newThread->number = tNum;
-		strcpy(newThread->path, fileName);
-		newThread->next = NULL;
-		newThread->local = NULL;
-		*root = newThread;
-		return *root;
-	} else 
-		return mapThread(&(*root)->next, tNum, fileName);
+		(*root)->next = createThreadRecord(tNum, fileName);
+	} else {
+		*root = createThreadRecord(tNum, fileName);
+	}
 }
 
 void cleanThreadList(struct ThreadRecord *root)
@@ -64,12 +69,7 @@ static void XMLCALL
 				break;
 			}
 		}
-		struct ThreadRecord* endRecord = mapThread(&startTR, threadID,
-			threadPath);
-		if (endRecord == NULL)
-			return;
-		if (startTR == NULL)
-			startTR = endRecord;
+		mapThread(&startTR, threadID, threadPath);
 	} 
 }
 

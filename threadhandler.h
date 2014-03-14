@@ -16,7 +16,6 @@ struct ThreadRecord
 	char path[BUFFSZ];
 	struct ThreadLocal *local;
 	struct ThreadRecord *next;
-//	pthread_mutex_t lockToAddDeleteRecord;
 };
 
 struct ThreadLocal
