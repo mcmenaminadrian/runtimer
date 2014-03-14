@@ -186,7 +186,6 @@ void* startThreadHandler(void *resources)
 	} while(!done);
 
 cleanup:
-	free(thResources->records);
 	removeOPTTree(thResources->local->optTree);
 	removePageTree(thResources->local->localTree);
 	removePageTree(thResources->globals->globalTree);

@@ -27,10 +27,11 @@ struct ThreadRecord* createThreadRecord(int tNum, char* fileName)
 void mapThread(struct ThreadRecord **root, int tNum, char *fileName)
 {
 	if (*root) {
-		while ((*root)->next) {
-			*root = (*root)->next;
+		struct ThreadRecord* thRecord = *root;
+		while (thRecord->next) {
+			thRecord = thRecord->next;
 		}
-		(*root)->next = createThreadRecord(tNum, fileName);
+		thRecord->next = createThreadRecord(tNum, fileName);
 	} else {
 		*root = createThreadRecord(tNum, fileName);
 	}
