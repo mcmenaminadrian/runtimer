@@ -14,7 +14,6 @@ class InstructionChain
 
 	public:
 	InstructionChain(unsigned long inst);
-	~InstructionChain();
 	const unsigned long getInstruction(void) const;
 	InstructionChain* getNext(void) const;
 	InstructionChain* setNext(InstructionChain* next);
@@ -24,11 +23,6 @@ InstructionChain::InstructionChain(unsigned long inst)
 {
 	instruction = inst;
 	next = NULL;
-}
-
-InstructionChain::~InstructionChain()
-{
-	killInstructionChain(getNext());
 }
 
 const unsigned long InstructionChain::getInstruction(void) const
