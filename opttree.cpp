@@ -26,15 +26,6 @@ InstructionChain::InstructionChain(unsigned long inst)
 	next = NULL;
 }
 
-void killInstructionChain(InstructionChain* iChain)
-{
-	if (iChain == NULL)
-		return;
-	InstructionChain *nextIC = iChain->getNext();
-	delete iChain;
-	killInstructionChain(nextIC);
-}
-
 InstructionChain::~InstructionChain()
 {
 	killInstructionChain(getNext());
@@ -126,7 +117,12 @@ void cleanOPTTree(redblacknode<OPTTreeNode>* node)
 		return;
 	cleanOPTTree(node->left);
 	cleanOPTTree(node->right);
-	delete node->getvalue().getHead();
+	InstructionChain* chain = node->getvalue().getHead();
+	while (chain) {
+		InstructionChain* oldChain = chain;
+		chain = chain->getNext();
+		delete oldChain;
+	}
 }
 
 extern "C" {
@@ -225,6 +221,3 @@ void removeOPTTree(void* tree)
 }	
 	
 } //end extern "C"
-
-				
-
