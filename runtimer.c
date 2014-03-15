@@ -164,8 +164,6 @@ int startFirstThread(char* outputprefix)
 
 	firstThreadLocal->threadNumber = startTR->number;
 
-	globalThreadList->head = firstThreadLocal;
-	globalThreadList->tail = firstThreadLocal;
 	sprintf(threadname, "%s%i.bin",outputprefix, startTR->number);
 	readOPTTree(firstThreadLocal->optTree, threadname);
 
@@ -180,6 +178,7 @@ int startFirstThread(char* outputprefix)
 	firstThreadResources->records = startTR;
 	firstThreadResources->globals = globalThreadList;
 	firstThreadResources->local = firstThreadLocal;
+	globalThreadList->head = startTR;
 	errL = pthread_mutex_init(&firstThreadLocal->threadLocalLock, NULL);
 	errG = pthread_mutex_init(&globalThreadList->threadGlobalLock, NULL);
 	if (errL || errG) {

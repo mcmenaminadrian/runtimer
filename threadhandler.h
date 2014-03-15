@@ -28,16 +28,13 @@ struct ThreadLocal
 	long prevTickCount;
 	void* localTree;
 	void* optTree;
-	struct ThreadLocal *prev;
 	struct ThreadLocal *next;
 	pthread_mutex_t threadLocalLock;
 };
 
 struct ThreadGlobal
 {
-	int activeThreads;
-	struct ThreadLocal* head;
-	struct ThreadLocal* tail;
+	struct ThreadRecord* head;
 	void* globalTree;
 	pthread_mutex_t threadGlobalLock;
 };

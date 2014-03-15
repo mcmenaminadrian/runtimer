@@ -9,6 +9,82 @@
 #include "insttree.h"
 #include "opttree.h"
 
+//launch a thread
+static void spawnThread(int threadNo, struct ThreadGlobal* globals)
+{
+	char* threadName = NULL;
+	//find the file that matches the thread number
+	struct ThreadRecord* threadRecord = globals->head;
+	while (threadRecord) {
+		if (threadRecord->number == threadNo) {
+			threadName = (char*) malloc(BUFFSZ);
+			strcpy(threadName, threadRecord->path);
+			break;
+		}
+		threadRecord = threadRecord->next;
+	}
+	if (!threadName) {
+		fprintf(stderr, "Could not initialise record for thread %i\n", threadNo)
+		return;
+	}
+
+	struct ThreadLocal* localThreadStuff = (struct ThreadLocal*) malloc(sizeof (struct ThreadLocal));
+	if (!localThreadStuff) {
+		fprintf(stderr, "Could not create local stuff for thread %i\n", threadNo);
+		goto failTL;
+	}
+
+	localThreadStuff->threadNumber = threadNo;
+	localThreadStuff->instructionCount = 0;
+	localThreadStuff->tickCount = 0;
+	localThreadStuff->prevTickCount = 0;
+	localThreadStuff->faultCount = 0;
+	localThreadStuff->localTree = createPageTree();
+	if (!localThreadStuff->localTree) {
+		fprintf(stderr, "Could not create local tree for thread %i\n", threadNo);
+		goto failLocTree;
+	}
+
+	localTreeStuff->optTree = createOPTTree();
+	if (!localTreeStuff->optTree) {
+		fprintf(stderr, "Could not create OPT tree for thread %i\n", threadNo);
+		goto failOPT;
+	}
+
+	int errL = pthread_mutex_init(&localThreadStuff->threadLocalLock);
+	if (errL) {
+		fprintf(stderr, "Error %i when initialising lock on thread %i\n", errL, threadNo);
+		goto failLock;
+	}
+
+	readOPTTree(localThreadStuff->optTree, threadName);
+	
+	struct ThreadResources* threadResources = (struct ThreadResources*) malloc(sizeof (struct ThreadResources));
+	if (!threadResources) {
+		fprinf(stderr, "Could not allocate memory for ThreadResources for thread %i\n", threadNo);
+		goto failTR;
+	}
+
+	threadResources->records = startTR;
+	threadResources->globals = globals;
+	threadResources->local = localThreadStuff;
+
+	pthread_t 	
+
+failTR:
+failLock:
+	free(localTreeStuff->optTree);
+failOPT:
+	free(localThreadStuff->localTree);	
+failLocTree:
+	free(localThreadStuff);
+failTL:
+done:
+	free(threadName);
+	return;
+}
+
+
 //C code that parses a thread
 
 static void removePage(long pageNumber, struct ThreadResources *thResources)
@@ -140,6 +216,17 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 			}
 		}
 		local->instructionCount++;
+	} else {
+		if (strcmp(name, "spawn") == 0) {
+			for (i = 0; attr[i]; i += 2) {
+				if (strcmp(attr[i], "thread") == 0) {
+					int threadNo = stroi(attr[i+1],
+						NULL, 10);
+					spawnThread(threadNo,
+						thResources->globals);
+				}
+			}
+		}
 	}
 }
 
