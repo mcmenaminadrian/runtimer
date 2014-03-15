@@ -143,9 +143,8 @@ int startFirstThread(char* outputprefix)
 		goto failFirstThreadLocal;
 	}
 	startTR->local = firstThreadLocal;
-	firstThreadLocal->prev = NULL;
-	firstThreadLocal->next = NULL;	
 	firstThreadLocal->instructionCount = 0;
+	firstThreadLocal->prevTickCount = 0;
 	firstThreadLocal->tickCount = 0;
 	firstThreadLocal->faultCount = 0;
 	firstThreadLocal->localTree = createPageTree();
@@ -187,12 +186,19 @@ int startFirstThread(char* outputprefix)
 			errL, errG);
 		goto failMutex;
 	}
-	pthread_t firstHandlerThread;
-	pthread_create(&firstHandlerThread, NULL, startThreadHandler,
+	struct ThreadArray* threads = (struct ThreadArray*) malloc (sizeof struct ThreadArray);
+	if (!threads) {
+		fprintf(stderr, "Could not initialise ThreadArray.\n");
+		goto failThreads;
+	}
+	threads->nextThread = NULL;
+	globalThreadList->threads = threads;
+	pthread_create(&threads->aPThread, NULL, startThreadHandler,
 		(void *)firstThreadResources);
-	pthread_join(firstHandlerThread, NULL);
+	pthread_join(threads->aPThread, NULL);
 	return 0;
 
+failThreads:
 failMutex:
 	free(firstThreadResources);
 failResources:

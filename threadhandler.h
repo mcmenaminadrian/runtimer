@@ -10,6 +10,12 @@
 
 struct ThreadLocal;
 
+struct ThreadArray
+{
+	pthread_mutex_t aPThread;
+	struct ThreadArray* nextThread;
+}
+
 struct ThreadRecord
 {
 	int number;
@@ -28,7 +34,6 @@ struct ThreadLocal
 	long prevTickCount;
 	void* localTree;
 	void* optTree;
-	struct ThreadLocal *next;
 	pthread_mutex_t threadLocalLock;
 };
 
@@ -36,6 +41,7 @@ struct ThreadGlobal
 {
 	struct ThreadRecord* head;
 	void* globalTree;
+	struct ThreadArray *threads;
 	pthread_mutex_t threadGlobalLock;
 };
 

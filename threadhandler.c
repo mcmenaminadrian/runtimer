@@ -69,8 +69,31 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 	threadResources->globals = globals;
 	threadResources->local = localThreadStuff;
 
-	pthread_t 	
+	struct ThreadArray* anotherThread = (struct ThreadArray*) malloc(sizeof (struct ThreadArray));
+	if (!anotherThread) {
+		fprintf(stderr, "Could not create pThread memory for thread %i\n", threadNumber);
+		goto failTA;
+	}
+	anotherThread->threadNumber = threadNumber;
+	anotherThread->nextThread = NULL;
 
+	pthread_mutex_lock(&globals->threadGlobalLock);
+	struct ThreadArray* tArray = globals->threads;	
+	while (tArray) {
+		if (tArray->nextThread == NULL) {
+			tArray->nextThread = anotherThread;
+			break;
+		}
+		tArray = tArray->nextThread;
+	}
+	pthread_mutex_unlock(&globals->threadGlobalLock);
+	
+	free(threadName);
+	pthread_create(&anotherThread->aPThread, NULL, startThreadHandler, (void*)threadResources);
+	return;
+
+failTA:
+	free(threadResources);
 failTR:
 failLock:
 	free(localTreeStuff->optTree);
@@ -272,6 +295,13 @@ void* startThreadHandler(void *resources)
 		}
 	} while(!done);
 	decrementActive();
+	struct ThreadArray* aThread = thResources->globals->threads;
+	while (aThread) {
+		if (aThread->number != thResources->local->threadNumber) {
+			pthread_join(aThread->aPThread);
+			aThread = aThread->nextThread;
+		}
+	}
 
 cleanup:
 	removeOPTTree(thResources->local->optTree);
