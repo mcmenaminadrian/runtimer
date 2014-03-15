@@ -125,7 +125,8 @@ failTL:
 
 static void removePage(long pageNumber, struct ThreadResources *thResources)
 {
-	printf("Introducing page %li\n", pageNumber);
+	printf("Thread: %i - introducing page %li\n",
+		thResources->local->threadNumber, pageNumber);
 	//find the page with the longest reuse distance,
 	//otherwise find the page with the oldest date
 	//either for this thread or all threads
