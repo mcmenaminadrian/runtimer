@@ -96,7 +96,7 @@ static void XMLCALL
 
 void updateTickCount(struct ThreadLocal* local)
 {
-	local->tickCount++
+	local->tickCount++;
 	if (local->tickCount - local->prevTickCount >= BARRIER) {
 		pthread_mutex_lock(&updateLock);
 		threadsLocked++;
@@ -107,7 +107,7 @@ void updateTickCount(struct ThreadLocal* local)
 			pthread_cond_wait(&barrierThreshold, &updateLock);
 		}
 		pthread_mutex_unlock(&updateLock);
-		local->prevTickCount = local->TickCount;
+		local->prevTickCount = local->tickCount;
 	}
 }			
 
