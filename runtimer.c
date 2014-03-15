@@ -7,8 +7,28 @@
 #include "threadhandler.h"
 #include "opttree.h"
 
+#define BARRIER 10
+
 struct ThreadRecord *startTR = NULL;
 static char outputprefix[BUFFSZ];
+static pthread_mutex_t updateLock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t barrierThreshold = PTHREAD_COND_INITIALIZER;
+static int threadsActive = 0;
+static int threadsLocked = 0;
+
+void incrementActive(void)
+{
+	pthread_mutex_lock(&updateLock);
+	threadsActive++;
+	pthread_mutex_unlock(&updateLock);
+}
+
+void decrementActive(void)
+{
+	pthread_mutex_lock(&updateLock);
+	threadsActive--;
+	pthread_mutex_unlock(&updateLock);
+}
 
 struct ThreadRecord* createThreadRecord(int tNum, char* fileName)
 {
@@ -73,6 +93,23 @@ static void XMLCALL
 		mapThread(&startTR, threadID, threadPath);
 	} 
 }
+
+void updateTickCount(struct ThreadLocal* local)
+{
+	local->tickCount++
+	if (local->tickCount - local->prevTickCount >= BARRIER) {
+		pthread_mutex_lock(&updateLock);
+		threadsLocked++;
+		if (threadsLocked >= threadsActive) {
+			pthread_cond_broadcast(&barrierThreshold);
+			threadsLocked = 0;
+		} else {
+			pthread_cond_wait(&barrierThreshold, &updateLock);
+		}
+		pthread_mutex_unlock(&updateLock);
+		local->prevTickCount = local->TickCount;
+	}
+}			
 
 int startFirstThread(char* outputprefix)
 {
@@ -147,7 +184,7 @@ int startFirstThread(char* outputprefix)
 	errG = pthread_mutex_init(&globalThreadList->threadGlobalLock, NULL);
 	if (errL || errG) {
 		fprintf(stderr,
-			"Mutex initialisation fails with %i and %i.\n",
+			"Mutex initialisation fails with %i and %i\n",
 			errL, errG);
 		goto failMutex;
 	}

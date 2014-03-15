@@ -59,7 +59,7 @@ static int faultPage(long pageNumber, struct ThreadResources *thResources)
 			thResources->globals->globalTree)) {
 			return 0;
 		}
-		thResources->local->tickCount++;
+		updateTickCount(thResources->local);
 		countDown--;
 	}
 	thResources->local->faultCount++;
@@ -78,7 +78,7 @@ static void inGlobalTree(long pageNumber, struct ThreadResources *thResources,
 	} else {
 		insertIntoPageTree(pageNumber, *now, local->localTree);
 	}
-	local->tickCount++;
+	updateTickCount(local);
 }
 
 static void notInGlobalTree(long pageNumber,
@@ -169,7 +169,7 @@ void* startThreadHandler(void *resources)
 		XML_ParserFree(p_threadParser);
 		goto cleanup;
 	}
-
+	incrementActive();
 	do { 
 		len = fread(data, 1, sizeof(data), inThreadXML);
 		done = len < sizeof(data);
@@ -184,6 +184,7 @@ void* startThreadHandler(void *resources)
 			goto cleanup;
 		}
 	} while(!done);
+	decrementActive();
 
 cleanup:
 	removeOPTTree(thResources->local->optTree);
