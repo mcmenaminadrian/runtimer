@@ -168,7 +168,8 @@ int startFirstThread(char* outputprefix)
 
 	//prepare to start the thread
 	firstThreadResources =
-		(struct ThreadResources*)malloc(sizeof (struct ThreadResources));
+		(struct ThreadResources*)
+		malloc(sizeof (struct ThreadResources));
 	if (!firstThreadResources) {
 		fprintf(stderr,
 			"Could not allocate memory for threadResources.\n");
@@ -186,7 +187,8 @@ int startFirstThread(char* outputprefix)
 			errL, errG);
 		goto failMutex;
 	}
-	struct ThreadArray* threads = (struct ThreadArray*) malloc (sizeof struct ThreadArray);
+	struct ThreadArray* threads = (struct ThreadArray*)
+		malloc(sizeof struct ThreadArray);
 	if (!threads) {
 		fprintf(stderr, "Could not initialise ThreadArray.\n");
 		goto failThreads;
@@ -195,7 +197,6 @@ int startFirstThread(char* outputprefix)
 	globalThreadList->threads = threads;
 	pthread_create(&threads->aPThread, NULL, startThreadHandler,
 		(void *)firstThreadResources);
-	pthread_join(threads->aPThread, NULL);
 	return 0;
 
 failThreads:

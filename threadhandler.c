@@ -24,13 +24,16 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 		threadRecord = threadRecord->next;
 	}
 	if (!threadName) {
-		fprintf(stderr, "Could not initialise record for thread %i\n", threadNo)
+		fprintf(stderr, "Could not initialise record for thread %i\n",
+			threadNo);
 		return;
 	}
 
-	struct ThreadLocal* localThreadStuff = (struct ThreadLocal*) malloc(sizeof (struct ThreadLocal));
+	struct ThreadLocal* localThreadStuff = (struct ThreadLocal*)
+		malloc(sizeof (struct ThreadLocal));
 	if (!localThreadStuff) {
-		fprintf(stderr, "Could not create local stuff for thread %i\n", threadNo);
+		fprintf(stderr, "Could not create local stuff for thread %i\n",
+			threadNo);
 		goto failTL;
 	}
 
@@ -41,27 +44,34 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 	localThreadStuff->faultCount = 0;
 	localThreadStuff->localTree = createPageTree();
 	if (!localThreadStuff->localTree) {
-		fprintf(stderr, "Could not create local tree for thread %i\n", threadNo);
+		fprintf(stderr, "Could not create local tree for thread %i\n",
+			threadNo);
 		goto failLocTree;
 	}
 
 	localTreeStuff->optTree = createOPTTree();
 	if (!localTreeStuff->optTree) {
-		fprintf(stderr, "Could not create OPT tree for thread %i\n", threadNo);
+		fprintf(stderr, "Could not create OPT tree for thread %i\n",
+			threadNo);
 		goto failOPT;
 	}
 
 	int errL = pthread_mutex_init(&localThreadStuff->threadLocalLock);
 	if (errL) {
-		fprintf(stderr, "Error %i when initialising lock on thread %i\n", errL, threadNo);
+		fprintf(stderr,
+			"Error %i when initialising lock on thread %i\n",
+			errL, threadNo);
 		goto failLock;
 	}
 
 	readOPTTree(localThreadStuff->optTree, threadName);
 	
-	struct ThreadResources* threadResources = (struct ThreadResources*) malloc(sizeof (struct ThreadResources));
+	struct ThreadResources* threadResources = (struct ThreadResources*)
+		malloc(sizeof (struct ThreadResources));
 	if (!threadResources) {
-		fprinf(stderr, "Could not allocate memory for ThreadResources for thread %i\n", threadNo);
+		fprinf(stderr,
+			"Could not allocate memory for ThreadResources for thread %i\n",
+			threadNo);
 		goto failTR;
 	}
 
@@ -69,9 +79,12 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 	threadResources->globals = globals;
 	threadResources->local = localThreadStuff;
 
-	struct ThreadArray* anotherThread = (struct ThreadArray*) malloc(sizeof (struct ThreadArray));
+	struct ThreadArray* anotherThread = (struct ThreadArray*)
+		malloc(sizeof (struct ThreadArray));
 	if (!anotherThread) {
-		fprintf(stderr, "Could not create pThread memory for thread %i\n", threadNumber);
+		fprintf(stderr,
+			"Could not create pThread memory for thread %i\n",
+			threadNumber);
 		goto failTA;
 	}
 	anotherThread->threadNumber = threadNumber;
@@ -89,7 +102,8 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	
 	free(threadName);
-	pthread_create(&anotherThread->aPThread, NULL, startThreadHandler, (void*)threadResources);
+	pthread_create(&anotherThread->aPThread, NULL, startThreadHandler,
+		(void*)threadResources);
 	return;
 
 failTA:
@@ -285,7 +299,8 @@ void* startThreadHandler(void *resources)
 		done = len < sizeof(data);
 		
 		if (XML_Parse(p_threadParser, data, len, 0) == 0) {
-			enum XML_Error errcde = XML_GetErrorCode(p_threadParser);
+			enum XML_Error errcde =
+				XML_GetErrorCode(p_threadParser);
 			printf("PARSE ERROR: %s\n", XML_ErrorString(errcde));
 			printf("Error at column number %lu\n",
 				XML_GetCurrentColumnNumber(p_threadParser));
@@ -295,6 +310,7 @@ void* startThreadHandler(void *resources)
 		}
 	} while(!done);
 	decrementActive();
+
 	struct ThreadArray* aThread = thResources->globals->threads;
 	while (aThread) {
 		if (aThread->number != thResources->local->threadNumber) {
