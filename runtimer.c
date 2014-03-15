@@ -197,6 +197,7 @@ int startFirstThread(char* outputprefix)
 	globalThreadList->threads = threads;
 	pthread_create(&threads->aPThread, NULL, startThreadHandler,
 		(void *)firstThreadResources);
+	pthread_join(threads->aPThread, NULL);
 	return 0;
 
 failThreads:
