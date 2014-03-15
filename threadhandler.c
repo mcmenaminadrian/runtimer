@@ -75,7 +75,7 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 		goto failTR;
 	}
 
-	threadResources->records = startTR;
+	threadResources->records = globals->head;
 	threadResources->globals = globals;
 	threadResources->local = localThreadStuff;
 
@@ -116,7 +116,6 @@ failOPT:
 failLocTree:
 	free(localThreadStuff);
 failTL:
-done:
 	free(threadName);
 	return;
 }
@@ -312,8 +311,8 @@ void* startThreadHandler(void *resources)
 
 	struct ThreadArray* aThread = thResources->globals->threads;
 	while (aThread) {
-		if (aThread->number != thResources->local->threadNumber) {
-			pthread_join(aThread->aPThread);
+		if (aThread->threadNumber != thResources->local->threadNumber) {
+			pthread_join(aThread->aPThread, NULL);
 			aThread = aThread->nextThread;
 		}
 	}
