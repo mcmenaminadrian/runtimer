@@ -188,14 +188,14 @@ int startFirstThread(char* outputprefix)
 		goto failMutex;
 	}
 	struct ThreadArray* threads = (struct ThreadArray*)
-		malloc(sizeof struct ThreadArray);
+		malloc(sizeof (struct ThreadArray));
 	if (!threads) {
 		fprintf(stderr, "Could not initialise ThreadArray.\n");
 		goto failThreads;
 	}
 	threads->nextThread = NULL;
 	globalThreadList->threads = threads;
-	pthread_create(&threads->aPThread, NULL, startThreadHandler,
+	pthread_create(threads->aPThread, NULL, startThreadHandler,
 		(void *)firstThreadResources);
 	return 0;
 

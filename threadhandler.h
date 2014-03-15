@@ -12,9 +12,10 @@ struct ThreadLocal;
 
 struct ThreadArray
 {
+	int threadNumber;
 	pthread_mutex_t aPThread;
 	struct ThreadArray* nextThread;
-}
+};
 
 struct ThreadRecord
 {
