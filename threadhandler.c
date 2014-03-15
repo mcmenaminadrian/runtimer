@@ -49,14 +49,14 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 		goto failLocTree;
 	}
 
-	localTreeStuff->optTree = createOPTTree();
-	if (!localTreeStuff->optTree) {
+	localThreadStuff->optTree = createOPTTree();
+	if (!localThreadStuff->optTree) {
 		fprintf(stderr, "Could not create OPT tree for thread %i\n",
 			threadNo);
 		goto failOPT;
 	}
 
-	int errL = pthread_mutex_init(&localThreadStuff->threadLocalLock);
+	int errL = pthread_mutex_init(&localThreadStuff->threadLocalLock, NULL);
 	if (errL) {
 		fprintf(stderr,
 			"Error %i when initialising lock on thread %i\n",
@@ -69,7 +69,7 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 	struct ThreadResources* threadResources = (struct ThreadResources*)
 		malloc(sizeof (struct ThreadResources));
 	if (!threadResources) {
-		fprinf(stderr,
+		fprintf(stderr,
 			"Could not allocate memory for ThreadResources for thread %i\n",
 			threadNo);
 		goto failTR;
@@ -84,10 +84,10 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 	if (!anotherThread) {
 		fprintf(stderr,
 			"Could not create pThread memory for thread %i\n",
-			threadNumber);
+			threadNo);
 		goto failTA;
 	}
-	anotherThread->threadNumber = threadNumber;
+	anotherThread->threadNumber = threadNo;
 	anotherThread->nextThread = NULL;
 
 	pthread_mutex_lock(&globals->threadGlobalLock);
@@ -110,7 +110,7 @@ failTA:
 	free(threadResources);
 failTR:
 failLock:
-	free(localTreeStuff->optTree);
+	free(localThreadStuff->optTree);
 failOPT:
 	free(localThreadStuff->localTree);	
 failLocTree:
@@ -257,8 +257,7 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 		if (strcmp(name, "spawn") == 0) {
 			for (i = 0; attr[i]; i += 2) {
 				if (strcmp(attr[i], "thread") == 0) {
-					int threadNo = stroi(attr[i+1],
-						NULL, 10);
+					int threadNo = atoi(attr[i+1]);
 					spawnThread(threadNo,
 						thResources->globals);
 				}
