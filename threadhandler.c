@@ -108,7 +108,6 @@ failTR:
 failLock:
 	free(localThreadStuff->optTree);
 failOPT:
-failLocTree:
 	free(localThreadStuff);
 failTL:
 	free(threadOPT);
@@ -187,7 +186,6 @@ static void notInGlobalTree(long pageNumber,
 	struct ThreadResources *thResources, time_t *now)
 {
 	struct ThreadGlobal *globals = thResources->globals;
-	struct ThreadLocal *local = thResources->local;
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	if (faultPage(pageNumber, thResources) > 0) {
 		pthread_mutex_lock(&globals->threadGlobalLock);
