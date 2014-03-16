@@ -12,6 +12,7 @@
 //launch a thread
 static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 {
+	printf("Spawning thread %i.\n", threadNo);
 	char* threadOPT = (char*) malloc(BUFFSZ);
 	if (!threadOPT) {
 		fprintf(stderr,
@@ -120,8 +121,11 @@ fail:
 
 static void removePage(long pageNumber, struct ThreadResources *thResources)
 {
-	printf("Thread: %i - introducing page %li\n",
-		thResources->local->threadNumber, pageNumber);
+	printf("Thread: %i - instruction: %li ticks: %li faults: %li\n",
+		thResources->local->threadNumber,
+		thResources->local->instructionCount,
+		thResources->local->tickCount,
+		thResources->local->faultCount);
 	//find the page with the longest reuse distance,
 	//otherwise find the page with the oldest date
 	//either for this thread or all threads
@@ -141,7 +145,6 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 	}
 	//now get the maximum
 	long maximumReuse = maxNode(instructionTree);
-	printf("Maximum reuse page is %li\n", maximumReuse);
 	if (maximumReuse && locatePageTreePR(maximumReuse,
 		thResources->globals->globalTree)) {
 		removeFromPageTree(maximumReuse,
@@ -292,6 +295,7 @@ void* startThreadHandler(void *resources)
 	} while(!done);
 	decrementActive();
 
+	printf("Thread %i finished\n", thResources->local->threadNumber);
 	struct ThreadArray* aThread = thResources->globals->threads;
 	while (aThread) {
 		if (aThread->threadNumber != thResources->local->threadNumber) {

@@ -3,19 +3,71 @@
 #include <string.h>
 #include <expat.h>
 #include <pthread.h>
+#include <time.h>
 #include "pages.h"
 #include "threadhandler.h"
 #include "opttree.h"
 
 #define BARRIER 10
+#define SUPER 100000
 
 struct ThreadRecord *startTR = NULL;
 static char outputprefix[BUFFSZ];
 static pthread_mutex_t updateLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t barrierThreshold = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t writeProgress = PTHREAD_COND_INITIALIZER;
 static int threadsActive = 0;
 static int threadsLocked = 0;
+static int writeCountDown = SUPER;
 
+//self-contained thread code that writes out performance data
+void* writeDataThread(void* tRes)
+{
+	struct ThreadResources* threadResources =
+		(struct ThreadResources*) tRes;
+	//lock down the globals until we have written files
+	pthread_mutex_lock(&threadResources->globals->threadGlobalLock);
+	FILE* fpInstructions;
+	FILE* fpFaults;
+	char filenameInstructions[BUFFSZ];
+	char filenameFaults[BUFFSZ];
+	time_t now = time(NULL);
+	sprintf(filenameInstructions, "Instructions%s.txt", asctime(now));
+	sprintf(filenameFaults, "Faults%s.txt", asctime(now));
+	fpInstructions = fopen(filenameInstructions, "w");
+	fpFaults = fopen(filenameFaults, "w");
+	pthread_mutex_unlock(&threadResources->globals->threadGlobalLock);
+	fprintf(fpInstructions, "Count");
+	fprintf(fpFaults, "Count, Rate");
+	for (int i = 1; i < 19; i++) {
+		fprintf(fpInstructions, ", Thread%i" ,i);
+		fprintf(fpFaults, ", Thread%i", i);
+	}
+	fprintf(fpInstructions, "\n");
+	fprintf(fpFaults, "\n");
+	struct ThreadRecord* records = threadResources->records;
+	do {
+		pthread_mutex_lock(
+			&threadResources->globals->threadGlobalLock);
+		fprintf(fpInstructions, "%li",
+			threadResources->globals->totalTicks);
+		fprintf(fpFaults, "%li",
+			threadResources->globals->totalTicks);
+		while (records) {
+			fprintf(fpInstructions, ", %li",
+			records->local->instructionCount);
+			fprintf(fpFaults, ", %li",
+			records->local->faultCount);
+			records = records->next;
+		}
+		pthread_cond_wait(&writeProgress,
+			&threadResources->globals->threadGlobalLock);
+		records = threadRecords->records;
+		pthread_mutex_unlock(
+			&threadResources->globals->threadGlobalLock);
+	} while (true);
+}
+	
 void incrementActive(void)
 {
 	pthread_mutex_lock(&updateLock);
@@ -101,8 +153,13 @@ void updateTickCount(struct ThreadLocal* local)
 		pthread_mutex_lock(&updateLock);
 		threadsLocked++;
 		if (threadsLocked >= threadsActive) {
+			totalTicks+=BARRIER;
 			pthread_cond_broadcast(&barrierThreshold);
 			threadsLocked = 0;
+			if (--writeCountDown <= 0) {
+				writeCountDown = SUPER;
+				pthread_cond_signal(&writeProgress);
+			}
 		} else {
 			pthread_cond_wait(&barrierThreshold, &updateLock);
 		}
@@ -127,7 +184,7 @@ int startFirstThread(char* outputprefix)
 			"Could not allocate memory for threadGlobal.\n");
 		goto failed;
 	}
-
+	globalThreadList->totalTicks = 0;
 	globalThreadList->globalTree = createPageTree();
 	if (!(globalThreadList->globalTree)) {
 		fprintf(stderr,
@@ -196,6 +253,7 @@ int startFirstThread(char* outputprefix)
 	}
 	threads->nextThread = NULL;
 	globalThreadList->threads = threads;
+	pthread_create(xxxx, NULL, writeDataThread, (void*)firstThreadResources);
 	pthread_create(&threads->aPThread, NULL, startThreadHandler,
 		(void *)firstThreadResources);
 	pthread_join(threads->aPThread, NULL);

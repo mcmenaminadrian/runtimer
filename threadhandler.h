@@ -30,7 +30,7 @@ struct ThreadLocal
 	int threadNumber;
 	long instructionCount;
 	long faultCount;
-//	long prevFaultCount;
+	long prevFaultCount;
 	long tickCount;
 	long prevTickCount;
 	void* optTree;
@@ -39,6 +39,7 @@ struct ThreadLocal
 
 struct ThreadGlobal
 {
+	long totalTicks;
 	struct ThreadRecord* head;
 	void* globalTree;
 	struct ThreadArray *threads;
