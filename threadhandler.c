@@ -13,7 +13,7 @@
 static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 {
 	printf("Spawning thread %i. at tick %li\n", threadNo,
-		globals->tickCount);
+		globals->totalTicks);
 	char* threadOPT = (char*) malloc(BUFFSZ);
 	if (!threadOPT) {
 		fprintf(stderr,
