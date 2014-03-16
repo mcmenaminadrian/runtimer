@@ -33,7 +33,6 @@ struct ThreadLocal
 //	long prevFaultCount;
 	long tickCount;
 	long prevTickCount;
-	void* localTree;
 	void* optTree;
 	pthread_mutex_t threadLocalLock;
 };

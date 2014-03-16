@@ -44,12 +44,6 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 	localThreadStuff->tickCount = 0;
 	localThreadStuff->prevTickCount = 0;
 	localThreadStuff->faultCount = 0;
-	localThreadStuff->localTree = createPageTree();
-	if (!localThreadStuff->localTree) {
-		fprintf(stderr, "Could not create local tree for thread %i\n",
-			threadNo);
-		goto failLocTree;
-	}
 
 	localThreadStuff->optTree = createOPTTree();
 	if (!localThreadStuff->optTree) {
@@ -114,7 +108,6 @@ failTR:
 failLock:
 	free(localThreadStuff->optTree);
 failOPT:
-	free(localThreadStuff->localTree);	
 failLocTree:
 	free(localThreadStuff);
 failTL:
@@ -134,7 +127,7 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 	//otherwise find the page with the oldest date
 	//either for this thread or all threads
 	struct PageChain *currentChain =
-		getPageChain(thResources->local->localTree);
+		getPageChain(thResources->global->globalTree);
 	void* instructionTree = createInstructionTree();
 	while (currentChain) {
 		long instructionNext =
@@ -143,7 +136,7 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 			thResources->local->optTree);
 		if (instructionNext == -1) {
 			fprintf(stderr,
-			"ERROR: Page %li in localTree but not in optTree",
+			"ERROR: Page %li in globalTree but not in optTree",
 			currentChain->page);
 		} else {
 			insertIntoTree(currentChain->page, instructionNext,
@@ -158,8 +151,6 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		thResources->globals->globalTree)) {
 		removeFromPageTree(maximumReuse,
 			thResources->globals->globalTree);
-		removeFromPageTree(maximumReuse,
-			thResources->local->localTree);
 	} else {
 		//if we didn't find the page, kill the oldest page
 		removeOldestFromPageTree(thResources->globals->globalTree);
@@ -189,11 +180,6 @@ static void inGlobalTree(long pageNumber, struct ThreadResources *thResources,
 	struct ThreadLocal *local = thResources->local;
 	updateLRU(pageNumber, *now, globals->globalTree);
 	pthread_mutex_unlock(&globals->threadGlobalLock);
-	if (locatePageTreePR(pageNumber, local->localTree)) {
-		updateLRU(pageNumber, *now, local->localTree);
-	} else {
-		insertIntoPageTree(pageNumber, *now, local->localTree);
-	}
 	updateTickCount(local);
 }
 
@@ -211,7 +197,6 @@ static void notInGlobalTree(long pageNumber,
 		}	
 		insertIntoPageTree(pageNumber, *now, globals->globalTree);
 		pthread_mutex_unlock(&globals->threadGlobalLock);
-		insertIntoPageTree(pageNumber, *now, local->localTree);
 	}
 }
 	
@@ -323,7 +308,6 @@ void* startThreadHandler(void *resources)
 
 cleanup:
 	removeOPTTree(thResources->local->optTree);
-	removePageTree(thResources->local->localTree);
 	removePageTree(thResources->globals->globalTree);
 	free(thResources->globals);
 	free(thResources);
