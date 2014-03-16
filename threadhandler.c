@@ -12,7 +12,8 @@
 //launch a thread
 static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 {
-	printf("Spawning thread %i.\n", threadNo);
+	printf("Spawning thread %i. at tick %li\n", threadNo,
+		globals->tickCount);
 	char* threadOPT = (char*) malloc(BUFFSZ);
 	if (!threadOPT) {
 		fprintf(stderr,
@@ -75,6 +76,7 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 	threadResources->records = threadRecord;
 	threadResources->globals = globals;
 	threadResources->local = localThreadStuff;
+	threadResources->records->local = localThreadStuff;
 
 	struct ThreadArray* anotherThread = (struct ThreadArray*)
 		malloc(sizeof (struct ThreadArray));
@@ -121,11 +123,11 @@ fail:
 
 static void removePage(long pageNumber, struct ThreadResources *thResources)
 {
-	printf("Thread: %i - instruction: %li ticks: %li faults: %li\n",
+/*	printf("Thread: %i - instruction: %li ticks: %li faults: %li\n",
 		thResources->local->threadNumber,
 		thResources->local->instructionCount,
 		thResources->local->tickCount,
-		thResources->local->faultCount);
+		thResources->local->faultCount); */
 	//find the page with the longest reuse distance,
 	//otherwise find the page with the oldest date
 	//either for this thread or all threads
