@@ -19,6 +19,7 @@ static pthread_cond_t writeProgress = PTHREAD_COND_INITIALIZER;
 static int threadsActive = 0;
 static int threadsLocked = 0;
 static int writeCountDown = SUPER;
+static pthread_t dataThread;
 
 //self-contained thread code that writes out performance data
 void* writeDataThread(void* tRes)
@@ -32,8 +33,10 @@ void* writeDataThread(void* tRes)
 	char filenameInstructions[BUFFSZ];
 	char filenameFaults[BUFFSZ];
 	time_t now = time(NULL);
-	sprintf(filenameInstructions, "Instructions%s.txt", asctime(now));
-	sprintf(filenameFaults, "Faults%s.txt", asctime(now));
+	sprintf(filenameInstructions, "Instructions%s.txt",
+		asctime(localtime(&now)));
+	sprintf(filenameFaults, "Faults%s.txt",
+		asctime(localtime(&now)));
 	fpInstructions = fopen(filenameInstructions, "w");
 	fpFaults = fopen(filenameFaults, "w");
 	pthread_mutex_unlock(&threadResources->globals->threadGlobalLock);
@@ -54,18 +57,24 @@ void* writeDataThread(void* tRes)
 		fprintf(fpFaults, "%li",
 			threadResources->globals->totalTicks);
 		while (records) {
-			fprintf(fpInstructions, ", %li",
-			records->local->instructionCount);
-			fprintf(fpFaults, ", %li",
-			records->local->faultCount);
+			if (records->local) {
+				fprintf(fpInstructions, ", %li",
+					records->local->instructionCount);
+				fprintf(fpFaults, ", %li",
+					records->local->faultCount);
+			}
 			records = records->next;
 		}
+		fprintf(fpInstructions, "\n");
+		fprintf(fpFaults, "\n");
 		pthread_cond_wait(&writeProgress,
 			&threadResources->globals->threadGlobalLock);
-		records = threadRecords->records;
+		records = threadResources->records;
 		pthread_mutex_unlock(
 			&threadResources->globals->threadGlobalLock);
-	} while (true);
+		fflush(fpInstructions);
+		fflush(fpFaults);
+	} while (1);
 }
 	
 void incrementActive(void)
@@ -146,14 +155,15 @@ static void XMLCALL
 	} 
 }
 
-void updateTickCount(struct ThreadLocal* local)
+void updateTickCount(struct ThreadResources* tRes)
 {
+	struct ThreadLocal* local = tRes->local;
 	local->tickCount++;
 	if (local->tickCount - local->prevTickCount >= BARRIER) {
 		pthread_mutex_lock(&updateLock);
 		threadsLocked++;
 		if (threadsLocked >= threadsActive) {
-			totalTicks+=BARRIER;
+			tRes->globals->totalTicks += BARRIER;
 			pthread_cond_broadcast(&barrierThreshold);
 			threadsLocked = 0;
 			if (--writeCountDown <= 0) {
@@ -253,7 +263,7 @@ int startFirstThread(char* outputprefix)
 	}
 	threads->nextThread = NULL;
 	globalThreadList->threads = threads;
-	pthread_create(xxxx, NULL, writeDataThread, (void*)firstThreadResources);
+	pthread_create(&dataThread, NULL, writeDataThread, (void*)firstThreadResources);
 	pthread_create(&threads->aPThread, NULL, startThreadHandler,
 		(void *)firstThreadResources);
 	pthread_join(threads->aPThread, NULL);

@@ -63,7 +63,7 @@ struct PageChain {
 void* startThreadHandler(void *resources);
 void incrementActive(void);
 void decrementActive(void);
-void updateTickCount(struct ThreadLocal* local);
+void updateTickCount(struct ThreadResources* tRes);
 
 #endif
 

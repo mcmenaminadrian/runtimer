@@ -164,7 +164,7 @@ static int faultPage(long pageNumber, struct ThreadResources *thResources)
 			thResources->globals->globalTree)) {
 			return 0;
 		}
-		updateTickCount(thResources->local);
+		updateTickCount(thResources);
 		countDown--;
 	}
 	thResources->local->faultCount++;
@@ -175,10 +175,9 @@ static void inGlobalTree(long pageNumber, struct ThreadResources *thResources,
 	time_t *now)
 {
 	struct ThreadGlobal *globals = thResources->globals;
-	struct ThreadLocal *local = thResources->local;
 	updateLRU(pageNumber, *now, globals->globalTree);
 	pthread_mutex_unlock(&globals->threadGlobalLock);
-	updateTickCount(local);
+	updateTickCount(thResources);
 }
 
 static void notInGlobalTree(long pageNumber,
