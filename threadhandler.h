@@ -43,6 +43,7 @@ struct ThreadGlobal
 	struct ThreadRecord* head;
 	void* globalTree;
 	struct ThreadArray *threads;
+	char* outputPrefix;
 	pthread_mutex_t threadGlobalLock;
 };
 

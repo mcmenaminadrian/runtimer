@@ -162,8 +162,15 @@ int startFirstThread(char* outputprefix)
 	}
 
 	firstThreadLocal->threadNumber = startTR->number;
+	globalThreadList->outputPrefix = (char*) malloc(BUFFSZ);
+	if (!globalThreadList->outputPrefix) {
+		fprintf(stderr,
+			"Could not allocate buffer for output prefix.\n");
+		goto failOutput;
+	}
+	strcpy(globalThreadList->outputPrefix, outputprefix);
 
-	sprintf(threadname, "%s%i.bin",outputprefix, startTR->number);
+	sprintf(threadname, "%s%i.bin", outputprefix, startTR->number);
 	readOPTTree(firstThreadLocal->optTree, threadname);
 
 	//prepare to start the thread
@@ -204,6 +211,8 @@ failThreads:
 failMutex:
 	free(firstThreadResources);
 failResources:
+	free(globalThreadList->outputPrefix);
+failOutput:
 	removeOPTTree(firstThreadLocal->optTree);
 failOPTTreeCreate:
 	removePageTree(firstThreadLocal->localTree);

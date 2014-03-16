@@ -12,21 +12,23 @@
 //launch a thread
 static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 {
-	char* threadName = NULL;
+	char* threadOPT = (char*) malloc(BUFFSZ);
+	if (!threadOPT) {
+		fprintf(stderr,
+			"Could not allocate memory to spawn thread %i.\n",
+			threadNo);
+		goto fail;
+	}
+	sprintf(threadOPT, "%s%i.bin", globals->outputPrefix, threadNo);
+
 	//find the file that matches the thread number
 	struct ThreadRecord* threadRecord = globals->head;
+	
 	while (threadRecord) {
 		if (threadRecord->number == threadNo) {
-			threadName = (char*) malloc(BUFFSZ);
-			strcpy(threadName, threadRecord->path);
 			break;
 		}
 		threadRecord = threadRecord->next;
-	}
-	if (!threadName) {
-		fprintf(stderr, "Could not initialise record for thread %i\n",
-			threadNo);
-		return;
 	}
 
 	struct ThreadLocal* localThreadStuff = (struct ThreadLocal*)
@@ -64,7 +66,7 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 		goto failLock;
 	}
 
-	readOPTTree(localThreadStuff->optTree, threadName);
+	readOPTTree(localThreadStuff->optTree, threadOPT);
 	
 	struct ThreadResources* threadResources = (struct ThreadResources*)
 		malloc(sizeof (struct ThreadResources));
@@ -75,7 +77,7 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 		goto failTR;
 	}
 
-	threadResources->records = globals->head;
+	threadResources->records = threadRecord;
 	threadResources->globals = globals;
 	threadResources->local = localThreadStuff;
 
@@ -101,7 +103,7 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 	}
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	
-	free(threadName);
+	free(threadOPT);
 	pthread_create(&anotherThread->aPThread, NULL, startThreadHandler,
 		(void*)threadResources);
 	return;
@@ -116,7 +118,8 @@ failOPT:
 failLocTree:
 	free(localThreadStuff);
 failTL:
-	free(threadName);
+	free(threadOPT);
+fail:
 	return;
 }
 
