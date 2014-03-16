@@ -133,11 +133,7 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 			nextInChain(currentChain->page,
 			thResources->local->instructionCount,
 			thResources->local->optTree);
-		if (instructionNext == -1) {
-			fprintf(stderr,
-			"ERROR: Page %li in globalTree but not in optTree",
-			currentChain->page);
-		} else {
+		if (instructionNext != -1) {
 			insertIntoTree(currentChain->page, instructionNext,
 				instructionTree);
 		}
