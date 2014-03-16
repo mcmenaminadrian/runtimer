@@ -127,7 +127,7 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 	//otherwise find the page with the oldest date
 	//either for this thread or all threads
 	struct PageChain *currentChain =
-		getPageChain(thResources->global->globalTree);
+		getPageChain(thResources->globals->globalTree);
 	void* instructionTree = createInstructionTree();
 	while (currentChain) {
 		long instructionNext =

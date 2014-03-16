@@ -147,12 +147,6 @@ int startFirstThread(char* outputprefix)
 	firstThreadLocal->prevTickCount = 0;
 	firstThreadLocal->tickCount = 0;
 	firstThreadLocal->faultCount = 0;
-	firstThreadLocal->localTree = createPageTree();
-	if (!(firstThreadLocal->localTree)) {
-		fprintf(stderr,
-			"Could not initialise local tree.\n");
-		goto failLocalTree;
-	}
 
 	firstThreadLocal->optTree = createOPTTree();
 	if (!(firstThreadLocal->optTree)) {
@@ -215,8 +209,6 @@ failResources:
 failOutput:
 	removeOPTTree(firstThreadLocal->optTree);
 failOPTTreeCreate:
-	removePageTree(firstThreadLocal->localTree);
-failLocalTree:
 	free(firstThreadLocal);
 failFirstThreadLocal:
 	removePageTree(globalThreadList->globalTree);
