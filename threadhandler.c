@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <string.h>
+#include <limits.h>
 #include "threadhandler.h"
 #include "pages.h"
 #include "insttree.h"
@@ -123,7 +124,7 @@ fail:
 
 static void removePage(long pageNumber, struct ThreadResources *thResources)
 {
-/*	printf("Thread: %i - instruction: %li ticks: %li faults: %li\n",
+	/*printf("Thread: %i - instruction: %li ticks: %li faults: %li\n",
 		thResources->local->threadNumber,
 		thResources->local->instructionCount,
 		thResources->local->tickCount,
@@ -141,6 +142,9 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 			thResources->local->optTree);
 		if (instructionNext != -1) {
 			insertIntoTree(currentChain->page, instructionNext,
+				instructionTree);
+		} else {
+			insertIntoTree(currentChain->page, LONG_MAX,
 				instructionTree);
 		}
 		currentChain = currentChain->next;
@@ -160,7 +164,7 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		
 static int faultPage(long pageNumber, struct ThreadResources *thResources)
 {
-	int countDown = 100 * MEMWIDTH;
+	int countDown = (4096 * 100)/MEMWIDTH ;
 	while (countDown) {
 		if (locatePageTreePR(pageNumber,
 			thResources->globals->globalTree)) {
@@ -295,11 +299,15 @@ void* startThreadHandler(void *resources)
 		}
 	} while(!done);
 	decrementActive();
-
-	printf("Thread %i finished\n", thResources->local->threadNumber);
+	thResources->local->prevTickCount = 0;
+	updateTickCount(thResources);
+	printf("Thread %i finished at tick %li\n",
+		thResources->local->threadNumber,
+		thResources->globals->totalTicks);
+	
 	struct ThreadArray* aThread = thResources->globals->threads;
 	while (aThread) {
-		if (aThread->threadNumber != thResources->local->threadNumber) {
+		if (aThread->threadNumber != thResources->local->threadNumber){
 			pthread_join(aThread->aPThread, NULL);
 			aThread = aThread->nextThread;
 		}

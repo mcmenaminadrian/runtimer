@@ -41,7 +41,7 @@ void* writeDataThread(void* tRes)
 	fpFaults = fopen(filenameFaults, "w");
 	pthread_mutex_unlock(&threadResources->globals->threadGlobalLock);
 	fprintf(fpInstructions, "Count");
-	fprintf(fpFaults, "Count, Rate");
+	fprintf(fpFaults, "Count");
 	for (int i = 1; i < 19; i++) {
 		fprintf(fpInstructions, ", Thread%i" ,i);
 		fprintf(fpFaults, ", Thread%i", i);
