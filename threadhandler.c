@@ -143,10 +143,7 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		if (instructionNext != -1) {
 			insertIntoTree(currentChain->page, instructionNext,
 				instructionTree);
-		} else {
-			insertIntoTree(currentChain->page, LONG_MAX,
-				instructionTree);
-		}
+		} 
 		currentChain = currentChain->next;
 	}
 	//now get the maximum

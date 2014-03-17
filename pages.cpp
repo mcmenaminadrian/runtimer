@@ -249,7 +249,6 @@ void* locatePageTreePR(long pageNumber, void* tree)
 void removeFromPageTree(long pageNumber, void* tree)
 {
 	PageRecordTree *prTree = static_cast<PageRecordTree *>(tree);
-	pthread_mutex_lock(&prTree->tree_lock);
 	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, prTree);
 	if (!pageNode) {
 		throw runtime_error("Could not locate Page item");
@@ -279,7 +278,6 @@ void removeFromPageTree(long pageNumber, void* tree)
 	if (!(prTree->pageRecordTree->removenode(*searchNode))) {
 		throw runtime_error("Attempting to remove non-existant node");
 	}
-	pthread_mutex_unlock(&prTree->tree_lock);
 	delete searchNode;
 }
 
