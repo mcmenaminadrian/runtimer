@@ -240,9 +240,7 @@ void* locatePageTreePR(long pageNumber, void* tree)
 {
 	PageRecordTree *prTree;
 	prTree = static_cast<PageRecordTree *>(tree);
-	pthread_mutex_lock(&prTree->tree_lock);
 	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, prTree);
-	pthread_mutex_unlock(&prTree->tree_lock);
 	return static_cast<void*>(pageNode);
 }
 
@@ -295,8 +293,9 @@ void* removeOldestFromPageTree(void* tree)
 		return NULL;
 	}
 	vector<long> pagesList = oldest->getvalue().getPageNumbers();
+	long pageToKill = *(pagesList.begin());
+	printf("Looking to kill page %li\n", pageToKill);
 	if (pagesList.size() > 1) {
-		long pageToKill = *(pagesList.begin()); printf("Looking to kill page %li\n", pageToKill);
 		pagesList.erase(pagesList.begin());
 		pageNode = locatePR(pageToKill, prTree);
 		if(!(prTree->pageRecordTree->removenode(*pageNode))) {
@@ -305,7 +304,6 @@ void* removeOldestFromPageTree(void* tree)
 		}
 	} else {
 		//have to kill LRU node also
-		long pageToKill = *(pagesList.begin());
 		pagesList.resize(0);
 		lruNode = locateLRU(oldest->getvalue().getLRUNumber(), prTree);
 		if (!(prTree->pageRecordLRUTree->removenode(*lruNode))) {
@@ -334,14 +332,12 @@ void updateLRU(long pageNumber, time_t lruTime, void* tree)
 	//fetch the node in the PR Tree
 	PageRecordTree *prTree;
 	prTree = static_cast<PageRecordTree *>(tree);
-	pthread_mutex_lock(&prTree->tree_lock);
 	redblacknode<PageRecord> *pageNode = locatePR(pageNumber, prTree);
 	if (!pageNode) {
 		throw runtime_error("Could not locate Page item");
 	}
 	time_t oldLRU = pageNode->getvalue().getLRUNumber();
 	if (oldLRU == lruTime) {
-		pthread_mutex_unlock(&prTree->tree_lock);
 		return;
 	}
 	pageNode->getvalue().setLRUNumber(lruTime);		
@@ -365,6 +361,13 @@ void updateLRU(long pageNumber, time_t lruTime, void* tree)
 	if (!gotPage) {
 		throw runtime_error("Page does not seem to exist in LRU heap");
 	}
+	if (pages.size() == 0) {
+		pages.resize(0);
+		if (!(prTree->pageRecordLRUTree->removenode(*foundLRU))) {
+			throw runtime_error(
+				"Attempted to remove non-existant node");
+		}
+	}
 
 	//is the new LRU time already indexed?
 	foundLRU = locateLRU(lruTime, prTree);
@@ -377,7 +380,6 @@ void updateLRU(long pageNumber, time_t lruTime, void* tree)
 		prTree->pageRecordLRUTree->insertnode(insertedLRU,
 			prTree->pageRecordLRUTree->root);
 	}
-	pthread_mutex_unlock(&prTree->tree_lock);
 }
 
 struct PageChain* getPageChain(void *tree)
