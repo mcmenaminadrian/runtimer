@@ -30,6 +30,7 @@ void* writeDataThread(void* tRes)
 	pthread_mutex_lock(&threadResources->globals->threadGlobalLock);
 	FILE* fpInstructions;
 	FILE* fpFaults;
+	int i;
 	char filenameInstructions[BUFFSZ];
 	char filenameFaults[BUFFSZ];
 	time_t now = time(NULL);
@@ -42,7 +43,7 @@ void* writeDataThread(void* tRes)
 	pthread_mutex_unlock(&threadResources->globals->threadGlobalLock);
 	fprintf(fpInstructions, "Count");
 	fprintf(fpFaults, "Count");
-	for (int i = 1; i < 19; i++) {
+	for (i = 1; i < 19; i++) {
 		fprintf(fpInstructions, ", Thread%i" ,i);
 		fprintf(fpFaults, ", Thread%i", i);
 	}
