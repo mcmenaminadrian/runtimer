@@ -47,6 +47,8 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 	localThreadStuff->tickCount = 0;
 	localThreadStuff->prevTickCount = 0;
 	localThreadStuff->faultCount = 0;
+	localThreadStuff->prevInstructionCount = 0;
+	localThreadStuff->prevFaultCount = 0;
 
 	localThreadStuff->optTree = createOPTTree();
 	if (!localThreadStuff->optTree) {
@@ -143,16 +145,19 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		if (instructionNext != -1) {
 			insertIntoTree(currentChain->page, instructionNext,
 				instructionTree);
-		} 
+		} else {
+			insertIntoTree(currentChain->page, LONG_MAX/2,
+			instructionTree);
+		}
 		currentChain = currentChain->next;
 	}
 	//now get the maximum
 	long maximumReuse = maxNode(instructionTree);
-	if (maximumReuse && locatePageTreePR(maximumReuse,
-		thResources->globals->globalTree)) {
+	if (maximumReuse) {
 		removeFromPageTree(maximumReuse,
 			thResources->globals->globalTree);
-	} else {
+	} else { 
+		printf("Thread %i: Killing %li for %li\n", thResources->local->threadNumber, maximumReuse, pageNumber);
 		//if we didn't find the page, kill the oldest page
 		removeOldestFromPageTree(thResources->globals->globalTree);
 	}

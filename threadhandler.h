@@ -29,6 +29,7 @@ struct ThreadLocal
 {
 	int threadNumber;
 	long instructionCount;
+	long prevInstructionCount;
 	long faultCount;
 	long prevFaultCount;
 	long tickCount;

@@ -58,11 +58,17 @@ void* writeDataThread(void* tRes)
 		fprintf(fpFaults, "%li",
 			threadResources->globals->totalTicks);
 		while (records) {
+			long instDiff = records->local->instructionCount -
+				records->local->prevInstructionCout;
+			records->local->prevInstructionCount = records->local->
+				instructionCount;
+			long faultDiff = records->local->faultCount -
+				records->local->prevFaultCount;
+			records->local->prevFaultCount = records->local->
+				faultCount;
 			if (records->local) {
-				fprintf(fpInstructions, ", %li",
-					records->local->instructionCount);
-				fprintf(fpFaults, ", %li",
-					records->local->faultCount);
+				fprintf(fpInstructions, ", %li", instDiff);
+				fprintf(fpFaults, ", %li", faultDiff);
 			}
 			records = records->next;
 		}
@@ -215,6 +221,8 @@ int startFirstThread(char* outputprefix)
 	firstThreadLocal->prevTickCount = 0;
 	firstThreadLocal->tickCount = 0;
 	firstThreadLocal->faultCount = 0;
+	firstThreadLocal->prevInstructionCount = 0;
+	firstThreadocal->prevFaultCount = 0;
 
 	firstThreadLocal->optTree = createOPTTree();
 	if (!(firstThreadLocal->optTree)) {
