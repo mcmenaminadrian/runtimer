@@ -122,7 +122,6 @@ fail:
 }
 
 
-//C code that parses a thread
 
 static void removePage(long pageNumber, struct ThreadResources *thResources)
 {
@@ -131,30 +130,69 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		thResources->local->instructionCount,
 		thResources->local->tickCount,
 		thResources->local->faultCount); */
-	//find the page with the longest reuse distance,
-	//otherwise find the page with the oldest date
-	//either for this thread or all threads
-	struct PageChain *currentChain =
-		getPageChain(thResources->globals->globalTree);
-	void* instructionTree = createInstructionTree();
-	while (currentChain) {
-		long instructionNext =
-			nextInChain(currentChain->page,
-			thResources->local->instructionCount,
-			thResources->local->optTree);
-		if (instructionNext != -1) {
-			insertIntoTree(currentChain->page, instructionNext,
-				instructionTree);
-		} else {
-			insertIntoTree(currentChain->page, LONG_MAX/2,
-			instructionTree);
-		}
-		currentChain = currentChain->next;
+	int i,j;
+	struct PageToKill killer;
+	for (i = 0; i < MAXTHREADS; i++)
+	{
+		killer.pageNumbers[i] = 0;
+		killer.instructionCounts[i] = 0;
 	}
-	//now get the maximum
-	long maximumReuse = maxNode(instructionTree);
-	if (maximumReuse) {
-		removeFromPageTree(maximumReuse,
+
+	struct ThreadRecord* records = thResources->records;
+	struct PageChain *headChain =
+			getPageChain(thResources->globals->globalTree);
+	struct PageChain* currentChain = NULL;
+	i = 0;
+	while (records) {
+		struct ThreadLocal* locals = records->locals;
+		i++;
+		if (!locals) {
+			continue;
+		}
+		currentChain = headChain;
+		void* instructionTree = createInstructionTree();
+		while (currentChain) {
+			long instructionNext =
+				nextInChain(currentChain->page,
+				thResources->local->instructionCount,
+				thResources->local->optTree);
+			if (instructionNext != -1) {
+				insertIntoTree(currentChain->page,
+					instructionNext, instructionTree);
+			}
+			currentChain = currentChain->next;
+		}
+		//now get the maximum
+		killer.pageNumbers[i] = maxNodePage(instructionTree);
+		killer.instructionCounts[i] = maxNodeDistance(instructionTree);
+	}
+	for (i = 0; i < MAXTHREADS; i++) {
+		for (j = 0; j < MAXTHREADS; j++){
+			if (i == j) {
+				continue;
+			}
+			if (killer.pageNumbers[i] == killer.pageNumbers[j]) {
+				if (killer.instructionCounts[i] < 
+					killer.instructionCounts[j]) {
+					killer.instructionCounts[i] =
+						killer.InstructionCounts[j];
+				} else {
+					killer.instructionCounts[j] =
+						killer.instructionCounts[i];
+				}
+			}
+		}
+	}
+	int maxReuse = 0;
+	j = -1;
+	for (i = 0; i < MAXTHREADS; i++) {
+		if (killer.instructionCount[i] > maxReuse) {
+			j = i;
+			maxReuse = killer.instructionCount[i];
+		}
+	}
+	if (j > 0) {
+		removeFromPageTree(killer.pageNumbers[j],
 			thResources->globals->globalTree);
 	} else { 
 		printf("Thread %i: Killing %li for %li\n", thResources->local->threadNumber, maximumReuse, pageNumber);

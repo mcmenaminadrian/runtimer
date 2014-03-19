@@ -7,8 +7,15 @@
 #define COREMEM 32768
 #define MEMWIDTH 16
 #define PAGESIZE (1 << BITSHIFT) 
+#define MAXTHREADS 18
 
 struct ThreadLocal;
+
+struct PageToKill
+{
+	long pageNumbers[MAXTHREADS];
+	long instructionCounts[MAXTHREADS];
+};
 
 struct ThreadArray
 {

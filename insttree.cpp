@@ -61,7 +61,7 @@ void insertIntoTree(long pageNumber, unsigned long instruction, void* tree)
 	instTree->insertnode(instOrderNode, instTree->root);
 }
 
-long maxNode(void* tree)
+long maxNodePage(void* tree)
 {
 	redblacktree<redblacknode<InstructionOrder> >* instTree;
 	redblacknode<InstructionOrder> *farNode;
@@ -71,6 +71,20 @@ long maxNode(void* tree)
 	//allow repeated calls of maxNode
 	if (farNode) {
 		return (farNode->getvalue()).getPageNumber();
+	}
+	return 0;
+}
+
+long maxNodeDistance(void* tree)
+{
+	redblacktree<redblacknode<InstructionOrder> >* instTree;
+	redblacknode<InstructionOrder> *farNode;
+	instTree =
+	static_cast<redblacktree<redblacknode<InstructionOrder> >*>(tree);
+	farNode = instTree->max();
+	//allow repeated calls of maxNode
+	if (farNode) {
+		return (farNode->getvalue()).getInstruction();
 	}
 	return 0;
 }
