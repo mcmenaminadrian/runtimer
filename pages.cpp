@@ -222,7 +222,6 @@ void insertIntoPageTree(long pageNumber, time_t lruTime, void* tree)
 	PageRecordLRU addLRU = PageRecordLRU(pageNumber, lruTime);
 	additionPRNode = new redblacknode<PageRecord>(addPR);
 	additionLRUNode = new redblacknode<PageRecordLRU>(addLRU);
-	pthread_mutex_lock(&prTree->tree_lock);
 	prTree->pageRecordTree->insertnode(additionPRNode,
 		prTree->pageRecordTree->root);
 	redblacknode<PageRecordLRU>* foundLRU = locateLRU(lruTime, prTree);
@@ -233,7 +232,6 @@ void insertIntoPageTree(long pageNumber, time_t lruTime, void* tree)
 		prTree->pageRecordLRUTree->insertnode(additionLRUNode,
 			prTree->pageRecordLRUTree->root);
 	}
-	pthread_mutex_unlock(&prTree->tree_lock);
 }
 
 void* locatePageTreePR(long pageNumber, void* tree)
