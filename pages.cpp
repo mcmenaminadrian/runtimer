@@ -55,10 +55,10 @@ void insertIntoPageTree(long pageNumber, void* tree)
 long locatePageTreePR(long pageNumber, void* tree)
 {
 	set<long>* prTree;
-	prTree = static_cast<PageRecordTree *>(tree);
+	prTree = static_cast<set<long> *>(tree);
 	set<long>::iterator it;
 	it = prTree->find(pageNumber);
-	if (it != prTree::end) {
+	if (it != prTree->end()) {
 		return *it;
 	} else {
 		return -1;
