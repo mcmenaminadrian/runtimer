@@ -199,7 +199,6 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 	} else { 
 		printf("Thread %i: Killing %li for %li\n", thResources->local->threadNumber, maxReuse, pageNumber);
 		//if we didn't find the page, kill the oldest page
-		removeOldestFromPageTree(thResources->globals->globalTree);
 	}
 }
 		
@@ -222,7 +221,6 @@ static void inGlobalTree(long pageNumber, struct ThreadResources *thResources,
 	time_t *now)
 {
 	struct ThreadGlobal *globals = thResources->globals;
-	updateLRU(pageNumber, *now, globals->globalTree);
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	updateTickCount(thResources);
 }
