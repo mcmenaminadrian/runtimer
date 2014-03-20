@@ -144,10 +144,10 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 	struct PageChain* currentChain = NULL;
 	i = 0;
 	while (records) {
-		struct ThreadLocal* locals = records->locals;
+		struct ThreadLocal* locals = records->local;
 		i++;
 		if (!locals) {
-			continue;
+			break;
 		}
 		currentChain = headChain;
 		void* instructionTree = createInstructionTree();
@@ -165,6 +165,8 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		//now get the maximum
 		killer.pageNumbers[i] = maxNodePage(instructionTree);
 		killer.instructionCounts[i] = maxNodeDistance(instructionTree);
+		freeInstTree(instructionTree);
+		records = records->next;
 	}
 	for (i = 0; i < MAXTHREADS; i++) {
 		for (j = 0; j < MAXTHREADS; j++){
@@ -175,7 +177,7 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 				if (killer.instructionCounts[i] < 
 					killer.instructionCounts[j]) {
 					killer.instructionCounts[i] =
-						killer.InstructionCounts[j];
+						killer.instructionCounts[j];
 				} else {
 					killer.instructionCounts[j] =
 						killer.instructionCounts[i];
@@ -183,23 +185,22 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 			}
 		}
 	}
-	int maxReuse = 0;
+	long maxReuse = 0;
 	j = -1;
 	for (i = 0; i < MAXTHREADS; i++) {
-		if (killer.instructionCount[i] > maxReuse) {
+		if (killer.instructionCounts[i] > maxReuse) {
 			j = i;
-			maxReuse = killer.instructionCount[i];
+			maxReuse = killer.instructionCounts[i];
 		}
 	}
 	if (j > 0) {
 		removeFromPageTree(killer.pageNumbers[j],
 			thResources->globals->globalTree);
 	} else { 
-		printf("Thread %i: Killing %li for %li\n", thResources->local->threadNumber, maximumReuse, pageNumber);
+		printf("Thread %i: Killing %li for %li\n", thResources->local->threadNumber, maxReuse, pageNumber);
 		//if we didn't find the page, kill the oldest page
 		removeOldestFromPageTree(thResources->globals->globalTree);
 	}
-	freeInstTree(instructionTree);
 }
 		
 static int faultPage(long pageNumber, struct ThreadResources *thResources)
