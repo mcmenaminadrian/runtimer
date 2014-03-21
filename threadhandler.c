@@ -262,7 +262,7 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 				//have address - is it already present?
 				pthread_mutex_lock(&globals->threadGlobalLock);
 				if (locatePageTreePR(pageNumber,
-						globals->globalTree)) {
+						globals->globalTree) > 0) {
 					inGlobalTree(pageNumber, thResources,
 						&now);
 				} else {
