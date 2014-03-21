@@ -207,7 +207,7 @@ static int faultPage(long pageNumber, struct ThreadResources *thResources)
 	int countDown = (4096 * 100)/MEMWIDTH ;
 	while (countDown) {
 		if (locatePageTreePR(pageNumber,
-			thResources->globals->globalTree)) {
+			thResources->globals->globalTree) > 0) {
 			return 0;
 		}
 		updateTickCount(thResources);
@@ -236,7 +236,7 @@ static void notInGlobalTree(long pageNumber,
 			CORES * COREMEM / PAGESIZE ) {
 			removePage(pageNumber, thResources);
 		}	
-		insertIntoPageTree(pageNumber, *now, globals->globalTree);
+		insertIntoPageTree(pageNumber, globals->globalTree);
 		pthread_mutex_unlock(&globals->threadGlobalLock);
 	}
 }

@@ -61,7 +61,7 @@ long locatePageTreePR(long pageNumber, void* tree)
 	if (it != prTree->end()) {
 		return *it;
 	} else {
-		return -1;
+		return 0;
 	}
 }
 

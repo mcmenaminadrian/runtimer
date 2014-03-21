@@ -7,15 +7,10 @@
 
 void* createPageTree(void);
 void removePageTree(void* tree);
-inline void* getRootPageTree(void* tree);
-inline void* getRootPageTreeLRU(void* tree);
-void insertIntoPageTree(long pageNumber, time_t lruTime, void* tree);
+void insertIntoPageTree(long pageNumber, void* tree);
 void* locatePageTreePR(long pageNumber, void* tree);
-void* locatePageTreeLRU(long pageNumber, void* tree);
 void removeFromPageTree(long pageNumber, void* tree);
-void* removeOldestFromPageTree(void* tree);
 int countPageTree(void* tree);
-void updateLRU(long pageNumber, time_t lruTime, void* tree);
 struct PageChain* getPageChain(void* tree);
 void showInOrder(void* tree);
 #endif
