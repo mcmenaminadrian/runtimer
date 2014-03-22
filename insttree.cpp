@@ -1,100 +1,65 @@
 #include <iostream>
 #include <cstdio>
-#include "redblack.hpp"
+#include <map>
 
 using namespace std;
 
 //build a tree ordered by next instruction
 
-class InstructionOrder
-{
-	private:
-	unsigned long instruction;
-	long pageNumber;
-
-	public:
-	InstructionOrder
-	(const unsigned long i, const long p):instruction(i), pageNumber(p){};
-	bool operator==(InstructionOrder&) const;
-	bool operator<(InstructionOrder&) const;
-	const unsigned long getInstruction(void) const;
-	const long getPageNumber(void) const;
-};
-
-bool InstructionOrder::operator==(InstructionOrder& iO) const
-{
-	return (instruction == iO.instruction);
-}
-
-bool InstructionOrder::operator<(InstructionOrder& iO) const
-{
-	return (instruction < iO.instruction);
-}
-
-const unsigned long InstructionOrder::getInstruction(void) const
-{
-	return instruction;
-}
-
-const long InstructionOrder::getPageNumber() const
-{
-	return pageNumber;
-}
-
 extern "C" {
 
 void* createInstructionTree(void)
 {
-	redblacktree<redblacknode<InstructionOrder> >* instTree;
-	instTree = new redblacktree<redblacknode<InstructionOrder> >();
+	map<long, long>* instTree = new map<long, long>;
 	return static_cast<void *>(instTree);
 }
 
-void insertIntoTree(long pageNumber, unsigned long instruction, void* tree)
+//item should only be inserted into tree if it reuse distance greater 
+//than current instruction number and less than existing value
+void insertIntoTree(const long& pageNumber, const long& instruction,
+	const long& curInstruction, void* tree)
 {
-	redblacktree<redblacknode<InstructionOrder> >* instTree;
-	instTree =
-	static_cast<redblacktree<redblacknode<InstructionOrder> >*>(tree);
-	InstructionOrder instOrder(instruction, pageNumber);
-	redblacknode<InstructionOrder>* instOrderNode =
-		new redblacknode<InstructionOrder>(instOrder);
-	instTree->insertnode(instOrderNode, instTree->root);
+	if (instruction < curInstruction) {
+		return;
+	}
+	map<long, long>* instTree;
+	instTree = static_cast<map<long, long>*>(tree);
+	map<long, long>::iterator it;
+	it = instTree.find(pageNumber);
+	if (it != instTree->end() && it->second > instruction) {
+		instTree->at(pageNumber) = instruction;
+	} else {
+		instTree->insert(pair<long, long>(pageNumber, instruction));
+	}
 }
 
 long maxNodePage(void* tree)
 {
-	redblacktree<redblacknode<InstructionOrder> >* instTree;
-	redblacknode<InstructionOrder> *farNode;
-	instTree =
-	static_cast<redblacktree<redblacknode<InstructionOrder> >*>(tree);
-	farNode = instTree->max();
-	//allow repeated calls of maxNode
-	if (farNode) {
-		return (farNode->getvalue()).getPageNumber();
-	}
-	return 0;
+	map<long, long>* instTree;
+	instTree = static_cast<map<long, long>*>(tree);
+	map<long, long>::reverse_iterator rit = instTree->rbegin();
+	return rit->first;
 }
 
 long maxNodeDistance(void* tree)
 {
-	redblacktree<redblacknode<InstructionOrder> >* instTree;
-	redblacknode<InstructionOrder> *farNode;
-	instTree =
-	static_cast<redblacktree<redblacknode<InstructionOrder> >*>(tree);
-	farNode = instTree->max();
-	//allow repeated calls of maxNode
-	if (farNode) {
-		return (farNode->getvalue()).getInstruction();
-	}
-	return 0;
+	map<long, long>* instTree;
+	instTree = static_cast<map<long, long>*>(tree);
+	map<long, long>::reverse_iterator rit = instTree->rbegin();
+	return rit->second;
+}
+
+long closestPage(void* tree)
+{
+	map<long, long>* instTree;
+	instTree = static_cast<map<long, long>*>(tree);
+	return instTree.begin()->first;
 }
 
 void freeInstTree(void* tree)
 {
-	redblacktree<redblacknode<InstructionOrder> >* instTree;
-	instTree =
-		static_cast<redblacktree<redblacknode<InstructionOrder> >*>
-		(tree);
+	map<long, long>* instTree;
+	instTree = static_cast<map<long, long>*> (tree);
 	delete instTree;
 }
 		
