@@ -160,7 +160,7 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		}
 
 		pushToMinTree(minTree, instructionTree);
-		records = records->next();
+		records = records->next;
 		freeInstTree(instructionTree);
 	}
 
