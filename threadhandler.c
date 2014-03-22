@@ -130,19 +130,14 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		thResources->local->instructionCount,
 		thResources->local->tickCount,
 		thResources->local->faultCount); */
-	int i,j;
-	struct PageToKill killer;
-	for (i = 0; i < MAXTHREADS; i++)
-	{
-		killer.pageNumbers[i] = 0;
-		killer.instructionCounts[i] = 0;
-	}
+		
 
 	struct ThreadRecord* records = thResources->records;
 	struct PageChain *headChain =
 			getPageChain(thResources->globals->globalTree);
 	struct PageChain* currentChain = NULL;
 	i = 0;
+	void* minTree = createMinTree();
 	while (records) {
 		struct ThreadLocal* locals = records->local;
 		i++;
@@ -154,52 +149,26 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		while (currentChain) {
 			long instructionNext =
 				nextInChain(currentChain->page,
-				thResources->local->instructionCount,
-				thResources->local->optTree);
+				locals->instructionCount,
+				locals->optTree);
 			if (instructionNext != -1) {
 				insertIntoTree(currentChain->page,
 					instructionNext, instructionTree);
+			} else {
+				insertIntoTree(currentChain->page,
+					LONG_MAX, instructionTree);
 			}
 			currentChain = currentChain->next;
 		}
-		//now get the maximum
-		killer.pageNumbers[i] = maxNodePage(instructionTree);
-		killer.instructionCounts[i] = maxNodeDistance(instructionTree);
+
+		pushToMinTree(minTree, instructionTree);
+		records = records->next();
 		freeInstTree(instructionTree);
-		records = records->next;
 	}
-	for (i = 0; i < MAXTHREADS; i++) {
-		for (j = 0; j < MAXTHREADS; j++){
-			if (i == j) {
-				continue;
-			}
-			if (killer.pageNumbers[i] == killer.pageNumbers[j]) {
-				if (killer.instructionCounts[i] < 
-					killer.instructionCounts[j]) {
-					killer.instructionCounts[i] =
-						killer.instructionCounts[j];
-				} else {
-					killer.instructionCounts[j] =
-						killer.instructionCounts[i];
-				}
-			}
-		}
-	}
-	long maxReuse = 0;
-	j = -1;
-	for (i = 0; i < MAXTHREADS; i++) {
-		if (killer.instructionCounts[i] > maxReuse) {
-			j = i;
-			maxReuse = killer.instructionCounts[i];
-		}
-	}
-	if (j > 0) {
-		removeFromPageTree(killer.pageNumbers[j],
-			thResources->globals->globalTree);
-	} else { 
-		printf("Thread %i: Killing %li for %li\n", thResources->local->threadNumber, maxReuse, pageNumber);
-		//if we didn't find the page, kill the oldest page
-	}
+
+	removeFromPageTree(getPageToKill(minTree),
+		thResources->globals->globalTree);
+	killMinTree(minTree);		
 }
 		
 static int faultPage(long pageNumber, struct ThreadResources *thResources)
