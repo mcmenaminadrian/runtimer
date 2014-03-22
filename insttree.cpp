@@ -16,17 +16,14 @@ void* createInstructionTree(void)
 
 //item should only be inserted into tree if it reuse distance greater 
 //than current instruction number and less than existing value
-void insertIntoTree(const long& pageNumber, const long& instruction,
-	const long& curInstruction, void* tree)
+void insertIntoTree(const long& pageNumber,
+	const long& instruction, void* tree)
 {
-	if (instruction < curInstruction) {
-		return;
-	}
 	map<long, long>* instTree;
 	instTree = static_cast<map<long, long>*>(tree);
 	map<long, long>::iterator it;
 	it = instTree->find(pageNumber);
-	if (it != instTree->end() && it->second > instruction) {
+	if (it != instTree->end()) {
 		instTree->at(pageNumber) = instruction;
 	} else {
 		instTree->insert(pair<long, long>(pageNumber, instruction));
