@@ -136,11 +136,9 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 	struct PageChain *headChain =
 			getPageChain(thResources->globals->globalTree);
 	struct PageChain* currentChain = NULL;
-	i = 0;
 	void* minTree = createMinTree();
 	while (records) {
 		struct ThreadLocal* locals = records->local;
-		i++;
 		if (!locals) {
 			break;
 		}
