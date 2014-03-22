@@ -25,7 +25,7 @@ void insertIntoTree(const long& pageNumber, const long& instruction,
 	map<long, long>* instTree;
 	instTree = static_cast<map<long, long>*>(tree);
 	map<long, long>::iterator it;
-	it = instTree.find(pageNumber);
+	it = instTree->find(pageNumber);
 	if (it != instTree->end() && it->second > instruction) {
 		instTree->at(pageNumber) = instruction;
 	} else {
@@ -53,7 +53,7 @@ long closestPage(void* tree)
 {
 	map<long, long>* instTree;
 	instTree = static_cast<map<long, long>*>(tree);
-	return instTree.begin()->first;
+	return instTree->begin()->first;
 }
 
 void freeInstTree(void* tree)
