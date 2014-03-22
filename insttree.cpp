@@ -14,10 +14,7 @@ void* createInstructionTree(void)
 	return static_cast<void *>(instTree);
 }
 
-//item should only be inserted into tree if it reuse distance greater 
-//than current instruction number and less than existing value
-void insertIntoTree(const long& pageNumber,
-	const long& instruction, void* tree)
+void insertIntoTree(long pageNumber, long instruction, void* tree)
 {
 	map<long, long>* instTree;
 	instTree = static_cast<map<long, long>*>(tree);
