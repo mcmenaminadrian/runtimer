@@ -11,7 +11,7 @@ clean:
 # normal build
 runtimer: runtimer.o insttree.o rbpages.o opttree.o threadhandler.o
 	g++ -O2 -o runtimer -Wall insttree.o rbpages.o opttree.o \
-		threadhandler.o runtimer.o -lexpat -lpthread
+		threadhandler.o runtimer.o -lexpat -lpthread -lncurses
 
 insttree.o: insttree.cpp insttree.h 
 	g++ -O2 -o insttree.o -c -Wall insttree.cpp
@@ -31,7 +31,7 @@ runtimer.o: runtimer.c threadhandler.h
 # debug build
 debugtimer: druntimer.o dinsttree.o drbpages.o dopttree.o dthreadhandler.o
 	g++ -g -o runtimer -Wall dinsttree.o drbpages.o dopttree.o \
-		dthreadhandler.o druntimer.o -lexpat -lpthread
+		dthreadhandler.o druntimer.o -lexpat -lpthread -lncurses
 
 dinsttree.o: insttree.cpp insttree.h 
 	g++ -g -o dinsttree.o -c -Wall insttree.cpp
