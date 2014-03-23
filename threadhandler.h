@@ -73,7 +73,6 @@ void incrementActive(void);
 void decrementActive(void);
 void updateTickCount(struct ThreadResources* tRes);
 
-int coresInUse = 0;
 void incrementCoresInUse(struct ThreadResources* tRes);
 void decrementCoresInUse(void);
 

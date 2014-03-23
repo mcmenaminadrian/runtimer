@@ -10,12 +10,6 @@
 #include "insttree.h"
 #include "opttree.h"
 
-
-void incrementCoresInUse(void)
-{
-	int 
-
-
 //launch a thread
 static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 {

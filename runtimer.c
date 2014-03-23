@@ -4,6 +4,7 @@
 #include <expat.h>
 #include <pthread.h>
 #include <time.h>
+#include <sys/time.h>
 #include "pages.h"
 #include "threadhandler.h"
 #include "opttree.h"
@@ -20,6 +21,7 @@ static pthread_mutex_t coresLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t enoughCores = PTHREAD_COND_INITIALIZER;
 static int threadsActive = 0;
 static int threadsLocked = 0;
+static int coresInUse = 0;
 static int writeCountDown = SUPER;
 static pthread_t dataThread;
 
@@ -103,23 +105,25 @@ void decrementActive(void)
 
 void incrementCoresInUse(struct ThreadResources* tRes)
 {
-	pthread_timestruc_t to;
+	struct timespec to;
+	struct timeval tp;
 	pthread_mutex_lock(&coresLock);
-	//one microsecond tick over
-	while (coresUsed == CORES) {
-		to.tv_sec = time(NULL);
-		to.tv_nsec = 1000;
+	//ten microsecond tick over
+	while (coresInUse == CORES) {
+		gettimeofday(&tp, NULL);
+		to.tv_sec = tp.tv_sec;
+		to.tv_nsec = (tp.tv_usec + 10) * 1000;
 		updateTickCount(tRes);
 		pthread_cond_timedwait(&enoughCores, &coresLock, &to);
 	}
-	coresUsed++;
+	coresInUse++;
 	pthread_mutex_unlock(&coresLock);
 }
 
 void decrementCoresInUse(void)
 {
 	pthread_mutex_lock(&coresLock);
-	coresUsed--;
+	coresInUse--;
 	pthread_cond_signal(&enoughCores);
 	pthread_mutex_unlock(&coresLock);
 }
