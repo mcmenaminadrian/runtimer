@@ -16,6 +16,8 @@ static char outputprefix[BUFFSZ];
 static pthread_mutex_t updateLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t barrierThreshold = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t writeProgress = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t coresLock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t enoughCores = PTHREAD_COND_INITIALIZER;
 static int threadsActive = 0;
 static int threadsLocked = 0;
 static int writeCountDown = SUPER;
@@ -97,6 +99,29 @@ void decrementActive(void)
 	pthread_mutex_lock(&updateLock);
 	threadsActive--;
 	pthread_mutex_unlock(&updateLock);
+}
+
+void incrementCoresInUse(struct ThreadResources* tRes)
+{
+	pthread_timestruc_t to;
+	pthread_mutex_lock(&coresLock);
+	//one microsecond tick over
+	while (coresUsed == CORES) {
+		to.tv_sec = time(NULL);
+		to.tv_nsec = 1000;
+		updateTickCount(tRes);
+		pthread_cond_timedwait(&enoughCores, &coresLock, &to);
+	}
+	coresUsed++;
+	pthread_mutex_unlock(&coresLock);
+}
+
+void decrementCoresInUse(void)
+{
+	pthread_mutex_lock(&coresLock);
+	coresUsed--;
+	pthread_cond_signal(&enoughCores);
+	pthread_mutex_unlock(&coresLock);
 }
 
 struct ThreadRecord* createThreadRecord(int tNum, char* fileName)

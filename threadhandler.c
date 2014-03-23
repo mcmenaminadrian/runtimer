@@ -10,6 +10,12 @@
 #include "insttree.h"
 #include "opttree.h"
 
+
+void incrementCoresInUse(void)
+{
+	int 
+
+
 //launch a thread
 static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 {
@@ -121,8 +127,6 @@ fail:
 	return;
 }
 
-
-
 static void removePage(long pageNumber, struct ThreadResources *thResources)
 {
 	/*printf("Thread: %i - instruction: %li ticks: %li faults: %li\n",
@@ -196,6 +200,7 @@ static void notInGlobalTree(long pageNumber,
 	struct ThreadResources *thResources, time_t *now)
 {
 	struct ThreadGlobal *globals = thResources->globals;
+	decrementCoresInUse();
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	if (faultPage(pageNumber, thResources) > 0) {
 		pthread_mutex_lock(&globals->threadGlobalLock);
@@ -206,6 +211,7 @@ static void notInGlobalTree(long pageNumber,
 		insertIntoPageTree(pageNumber, globals->globalTree);
 		pthread_mutex_unlock(&globals->threadGlobalLock);
 	}
+	incrementCoresInUse(thResources);
 }
 	
 static void XMLCALL
@@ -288,6 +294,7 @@ void* startThreadHandler(void *resources)
 		XML_ParserFree(p_threadParser);
 		goto cleanup;
 	}
+	incrementCoresInUse(thResources);
 	incrementActive();
 	do { 
 		len = fread(data, 1, sizeof(data), inThreadXML);
@@ -305,6 +312,7 @@ void* startThreadHandler(void *resources)
 		}
 	} while(!done);
 	decrementActive();
+	decrementCoresInUse();
 	thResources->local->prevTickCount = 0;
 	updateTickCount(thResources);
 	printf("Thread %i finished at tick %li\n",
