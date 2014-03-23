@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <sys/time.h>
+#include <curses.h>
 #include "pages.h"
 #include "threadhandler.h"
 #include "opttree.h"
@@ -54,6 +55,14 @@ void* writeDataThread(void* tRes)
 	fprintf(fpInstructions, "\n");
 	fprintf(fpFaults, "\n");
 	struct ThreadRecord* records = threadResources->records;
+	initscr();
+	move(0,0);
+	printw("Runtimer Multi-threaded OPT");
+	move(1,0);
+	printw("Copyright, (c) Adrian McMenamin, 2014");
+	move(2,0);
+	printw("For licence details see http://github.com/mcmenaminadrian");
+	refresh();
 	do {
 		pthread_mutex_lock(
 			&threadResources->globals->threadGlobalLock);
@@ -77,15 +86,39 @@ void* writeDataThread(void* tRes)
 			}
 			records = records->next;
 		}
-		fprintf(fpInstructions, "\n");
-		fprintf(fpFaults, "\n");
 		pthread_cond_wait(&writeProgress,
 			&threadResources->globals->threadGlobalLock);
-		records = threadResources->records;
 		pthread_mutex_unlock(
 			&threadResources->globals->threadGlobalLock);
+		fprintf(fpInstructions, "\n");
+		fprintf(fpFaults, "\n");
+		records = threadResources->records;
 		fflush(fpInstructions);
 		fflush(fpFaults);
+		move(5,0);
+		printw("Ticks: %li\n", threadResources->globals->totalTicks);
+		move(6,0);
+		printw("FAULTS\n");
+		move(8,0);
+		printw("INSTRUCTIONS\n");
+		move(7,0);
+		while (records) {
+			if (records->local) {
+				printw(" %li ", records->local->faultCount);
+			}
+			records = records->next;
+		}
+		records = threadResources->records;
+		move(9, 0);
+		while (records) {
+			if (records->local) {
+				printw(" %li ",
+					records->local->instructionCount);
+			}
+			records = records->next;
+		}
+		records = threadResources->records;
+		refresh();	 
 	} while (1);
 }
 	

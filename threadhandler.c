@@ -5,16 +5,21 @@
 #include <time.h>
 #include <string.h>
 #include <limits.h>
+#include <curses.h>
 #include "threadhandler.h"
 #include "pages.h"
 #include "insttree.h"
 #include "opttree.h"
 
+static int threadline = 10;
+
 //launch a thread
 static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 {
-	printf("Spawning thread %i. at tick %li\n", threadNo,
+	move(++threadline, 0);
+	printw("Spawning thread %i. at tick %li\n", threadNo,
 		globals->totalTicks);
+	refresh();
 	char* threadOPT = (char*) malloc(BUFFSZ);
 	if (!threadOPT) {
 		fprintf(stderr,
@@ -128,7 +133,6 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		thResources->local->instructionCount,
 		thResources->local->tickCount,
 		thResources->local->faultCount); */
-		
 
 	struct ThreadRecord* records = thResources->records;
 	struct PageChain *headChain =
@@ -309,9 +313,11 @@ void* startThreadHandler(void *resources)
 	decrementCoresInUse();
 	thResources->local->prevTickCount = 0;
 	updateTickCount(thResources);
-	printf("Thread %i finished at tick %li\n",
+	move(++threadline, 0);
+	printw("Thread %i finished at tick %li\n",
 		thResources->local->threadNumber,
 		thResources->globals->totalTicks);
+	refresh();
 	
 	struct ThreadArray* aThread = thResources->globals->threads;
 	while (aThread) {
