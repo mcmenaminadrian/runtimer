@@ -47,7 +47,7 @@ void pushToMinTree(void* mTree, void* iTree)
 	minTree = static_cast<map<long, long>*>(mTree);
 	instTree = static_cast<map<long, long>*>(iTree);
 	map<long, long>::iterator itInst;
-	itInst = iTree->begin();
+	itInst = instTree->begin();
 	map<long, long>::iterator itMin = minTree->find(itInst->second);
 	if (itMin == minTree->end()) {
 		minTree->insert(pair<long, long>(itInst->second,
