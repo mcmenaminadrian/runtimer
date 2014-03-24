@@ -42,6 +42,7 @@ struct ThreadLocal
 	long tickCount;
 	long prevTickCount;
 	void* optTree;
+	int dead;
 	pthread_mutex_t threadLocalLock;
 };
 

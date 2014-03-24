@@ -144,6 +144,9 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		if (!locals) {
 			break;
 		}
+		if (locals->dead == 1) {
+			continue;
+		}
 		currentChain = headChain;
 		void* instructionTree = createInstructionTree();
 		while (currentChain) {
@@ -294,6 +297,7 @@ void* startThreadHandler(void *resources)
 	}
 	incrementCoresInUse(thResources);
 	incrementActive();
+	thResources->local->dead = 0;
 	do { 
 		len = fread(data, 1, sizeof(data), inThreadXML);
 		done = len < sizeof(data);
@@ -312,6 +316,7 @@ void* startThreadHandler(void *resources)
 	decrementActive();
 	decrementCoresInUse();
 	thResources->local->prevTickCount = 0;
+	thResources->local->dead = 1;
 	updateTickCount(thResources);
 	move(++threadline, 0);
 	printw("Thread %i finished at tick %li\n",
