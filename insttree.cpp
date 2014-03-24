@@ -18,7 +18,7 @@ void insertIntoTree(long pageNumber, long instruction, void* tree)
 {
 	map<long, long>* instTree;
 	instTree = static_cast<map<long, long>*>(tree);
-	instTree->insert(pair<long, long>(instruction, pageNumber));
+	instTree->insert(pair<long, long>(pageNumber, instruction));
 }
 
 void freeInstTree(void* tree)
@@ -47,14 +47,18 @@ void pushToMinTree(void* mTree, void* iTree)
 	minTree = static_cast<map<long, long>*>(mTree);
 	instTree = static_cast<map<long, long>*>(iTree);
 	map<long, long>::iterator itInst;
-	itInst = instTree->begin();
-	map<long, long>::iterator itMin = minTree->find(itInst->second);
-	if (itMin == minTree->end()) {
-		minTree->insert(pair<long, long>(itInst->second,
-			itInst->first));
-	} else {
-		if (itMin->second > itInst->first) {
-			itMin->second = itInst->first;
+	//insert into tree if no record for page or a new min distance
+	for (itInst = instTree->begin(); itInst != instTree->end(); itInst++)
+	{
+		map<long, long>::iterator itMin = minTree->find(itInst->first);
+		if (itMin == minTree->end()) {
+			minTree->insert(
+				pair<long, long>(itInst->first,
+				itInst->second));
+		} else {
+			if (itMin->second > itInst->second) {
+				itMin->second = itInst->second;
+			}
 		}
 	}
 }
