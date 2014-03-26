@@ -4,6 +4,7 @@
 #include <fstream>
 #include <set>
 #include <map>
+#include "opttree.h"
 
 using namespace std;
 
@@ -31,7 +32,7 @@ void readOPTTree(void *tree, char *path)
 	while (inFile && inFile.eof() == false) {
 		inFile.read(buffIn, longLength);
 		pageNumberRead = *((unsigned long*)buffIn);
-		set<unsigned long> pageSet();
+		set<unsigned long> pageSet;
 		do {
 			inFile.read(buffIn, longLength);
 			nextInstructionRead = *((unsigned long*)buffIn);
@@ -39,11 +40,13 @@ void readOPTTree(void *tree, char *path)
 				pageSet.insert(nextInstructionRead);
 			}
 		} while (nextInstructionRead != 0);
-		optTree.insert(pair<long, set<unsigned long> >
+		optTree->insert(pair<long, set<unsigned long> >
 			(pageNumberRead, pageSet));
 	}
 	delete[] buffIn;
 }
+
+
 
 long
 findNextInstruction(unsigned long currentInstruction, long pageNumber,
@@ -55,38 +58,21 @@ findNextInstruction(unsigned long currentInstruction, long pageNumber,
 	optTree = static_cast<map<long, set<unsigned long> >*>(tree);
 	it = optTree->find(pageNumber);
 	if (it == optTree->end()) {
-		return -1;
+		return LONG_MAX;
 	}
 
 	set<unsigned long> setFound = it->second;
 	set<unsigned long>::iterator setIT;
 	setIT = setFound.upper_bound(pageNumber);
 	if (setIT == setFound.end()) {
-		return -1;
+		return LONG_MAX;
 	}
 	return *setIT;	
-}
-
-
-long nextInChain(long pageNumber, long instructionCount, void* tree)
-{
-	redblacktree<redblacknode<OPTTreeNode> >* optTree;
-	OPTTreeNode findOPT(pageNumber);
-	redblacknode<OPTTreeNode> findNode(findOPT);
-	optTree = static_cast<redblacktree<redblacknode<OPTTreeNode> >*>(tree);
-	//find the node with the pageNumber
-	redblacknode<OPTTreeNode>* found = optTree->locatenode(&findNode,
-		optTree->root);
-	if (!found)
-		return -1;
-	OPTTreeNode v = found->getvalue();
-	InstructionChain *vChain = v.getHead(); 	
-	return findNextInstruction(instructionCount, vChain);
-}
+}	
 
 void removeOPTTree(void* tree)
 {
-	redblacktree<redblacknode<OPTTreeNode> >* optTree;
+	map<long, set<unsigned long> >* optTree;
 	optTree = static_cast<map<long, set<unsigned long> >*>(tree);
 	delete optTree;
 }	
