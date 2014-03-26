@@ -328,8 +328,8 @@ void* startThreadHandler(void *resources)
 	while (aThread) {
 		if (aThread->threadNumber != thResources->local->threadNumber){
 			pthread_join(aThread->aPThread, NULL);
-			aThread = aThread->nextThread;
 		}
+		aThread = aThread->nextThread;
 	}
 
 cleanup:
