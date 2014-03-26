@@ -65,7 +65,8 @@ findNextInstruction(unsigned long currentInstruction, long pageNumber,
 	if (setIT == (it->second).end()) {
 		return LONG_MAX;
 	}
-	return *setIT;	
+	//return the distance
+	return (*setIT - currentInstruction);	
 }	
 
 void removeOPTTree(void* tree)

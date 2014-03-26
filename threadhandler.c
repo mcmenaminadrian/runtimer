@@ -148,8 +148,8 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		void* instructionTree = createInstructionTree();
 		fillInstructionTree(thResources->globals->globalTree,
 			instructionTree,
-			thResources->local->optTree,
-			thResources->local->instructionCount);
+			locals->optTree,
+			locals->instructionCount);
 		pushToMinTree(minTree, instructionTree);
 		records = records->next;
 		freeInstTree(instructionTree);
@@ -191,7 +191,7 @@ static void notInGlobalTree(long pageNumber,
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	if (faultPage(pageNumber, thResources) > 0) {
 		pthread_mutex_lock(&globals->threadGlobalLock);
-		if (countPageTree(globals->globalTree) >=
+		if (countPageTree(globals->globalTree) >
 			CORES * COREMEM / PAGESIZE ) {
 			removePage(pageNumber, thResources);
 		}	
