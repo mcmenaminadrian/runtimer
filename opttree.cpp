@@ -4,7 +4,6 @@
 #include <fstream>
 #include <set>
 #include <map>
-#include "redblack.hpp"
 
 using namespace std;
 
