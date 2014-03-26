@@ -19,7 +19,7 @@ insttree.o: insttree.cpp insttree.h
 threadhandler.o: threadhandler.c threadhandler.h 
 	gcc -O2 -o threadhandler.o -c -Wall threadhandler.c
 
-opttree.o: opttree.cpp redblack.hpp
+opttree.o: opttree.cpp
 	g++ -O2 -o opttree.o -c -Wall opttree.cpp
 
 rbpages.o: pages.cpp 
@@ -39,7 +39,7 @@ dinsttree.o: insttree.cpp insttree.h
 dthreadhandler.o: threadhandler.c threadhandler.h
 	gcc -g -o dthreadhandler.o -c -Wall threadhandler.c
 
-dopttree.o: opttree.cpp redblack.hpp
+dopttree.o: opttree.cpp
 	g++ -g -o dopttree.o -c -Wall opttree.cpp
 
 drbpages.o: pages.cpp
