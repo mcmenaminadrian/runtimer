@@ -4,7 +4,6 @@
 #include <fstream>
 #include <set>
 #include <map>
-#include "opttree.h"
 
 using namespace std;
 
@@ -61,10 +60,9 @@ findNextInstruction(unsigned long currentInstruction, long pageNumber,
 		return LONG_MAX;
 	}
 
-	set<unsigned long> setFound = it->second;
 	set<unsigned long>::iterator setIT;
-	setIT = setFound.upper_bound(pageNumber);
-	if (setIT == setFound.end()) {
+	setIT = (it->second).upper_bound(currentInstruction);
+	if (setIT == (it->second).end()) {
 		return LONG_MAX;
 	}
 	return *setIT;	

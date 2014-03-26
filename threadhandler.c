@@ -135,9 +135,6 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		thResources->local->faultCount); */
 
 	struct ThreadRecord* records = thResources->records;
-	struct PageChain *headChain =
-			getPageChain(thResources->globals->globalTree);
-	struct PageChain* currentChain = NULL;
 	void* minTree = createMinTree();
 	while (records) {
 		struct ThreadLocal* locals = records->local;
@@ -147,23 +144,12 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		if (locals->dead == 1) {
 			continue;
 		}
-		currentChain = headChain;
+		
 		void* instructionTree = createInstructionTree();
-		while (currentChain) {
-			long instructionNext =
-				nextInChain(currentChain->page,
-				locals->instructionCount,
-				locals->optTree);
-			if (instructionNext != -1) {
-				insertIntoTree(currentChain->page,
-					instructionNext, instructionTree);
-			} else {
-				insertIntoTree(currentChain->page,
-					LONG_MAX, instructionTree);
-			}
-			currentChain = currentChain->next;
-		}
-
+		fillInstructionTree(thResources->globals->globalTree,
+			instructionTree,
+			thResources->local->optTree,
+			thResources->local->instructionCount);
 		pushToMinTree(minTree, instructionTree);
 		records = records->next;
 		freeInstTree(instructionTree);

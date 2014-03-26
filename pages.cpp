@@ -7,13 +7,14 @@
 #include <set>
 #include "pthread.h"
 #include "threadhandler.h"
-#include "opttree.h"
-#include "pages.h"
 
 using namespace std;
 
 
 extern "C" {
+
+long findNextInstruction(unsigned long cI, long pN, void* tree);
+void insertIntoTree(long, long, void*);
 
 void* createPageTree(void)
 {
@@ -61,15 +62,16 @@ int countPageTree(void* tree)
 }
 
 void
-fillInstructionTree(void* global, void* iTree, void* oTree, long instruction);
+fillInstructionTree(void* global, void* iTree, void* oTree, long instruction)
 {
 	set<long>* prTree;
 	prTree = static_cast<set<long> *>(global);
 	set<long>::iterator it;
 	for (it = prTree->begin(); it != prTree->end(); it++) {
-		insertIntoTree(*it,
-			findNextInstruction(instruction, *it, oTree),
-			iTree);
+		long pageNumber = *it;
+		long nextInstruction = findNextInstruction(instruction,
+			pageNumber, oTree);
+		insertIntoTree(pageNumber, nextInstruction, iTree);
 	}
 }
 
