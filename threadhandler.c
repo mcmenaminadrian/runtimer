@@ -143,6 +143,7 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 			break;
 		}
 		if (locals->dead == 1) {
+			records = records->next;
 			continue;
 		}
 		
