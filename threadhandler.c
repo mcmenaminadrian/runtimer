@@ -324,6 +324,7 @@ cleanup:
 	
 	removeOPTTree(thResources->local->optTree);
 	if (thResources->local->threadNumber == 1) {
+		getch();
 		removePageTree(thResources->globals->globalTree);
 		free(thResources->globals);
 	}
