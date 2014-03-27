@@ -321,9 +321,12 @@ void* startThreadHandler(void *resources)
 	}
 
 cleanup:
+	
 	removeOPTTree(thResources->local->optTree);
-	removePageTree(thResources->globals->globalTree);
-	free(thResources->globals);
+	if (thResources->local->threadNumber == 1) {
+		removePageTree(thResources->globals->globalTree);
+		free(thResources->globals);
+	}
 	free(thResources);
 	
 	return NULL;
