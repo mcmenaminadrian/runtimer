@@ -14,7 +14,8 @@
 static int threadline = 10;
 
 //launch a thread
-static void spawnThread(int threadNo, struct ThreadGlobal* globals)
+static void
+spawnThread(int parentThread, int threadNo, struct ThreadGlobal* globals)
 {
 	move(++threadline, 0);
 	printw("Spawning thread %i. at tick %li\n", threadNo,
@@ -94,7 +95,7 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 			threadNo);
 		goto failTA;
 	}
-	anotherThread->threadNumber = threadNo;
+	anotherThread->threadNumber = parentThread;
 	anotherThread->nextThread = NULL;
 
 	pthread_mutex_lock(&globals->threadGlobalLock);
@@ -247,8 +248,8 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 			for (i = 0; attr[i]; i += 2) {
 				if (strcmp(attr[i], "thread") == 0) {
 					int threadNo = atoi(attr[i+1]);
-					spawnThread(threadNo,
-						thResources->globals);
+					spawnThread(local->threadNumber,
+						threadNo, globals);
 				}
 			}
 		}
@@ -312,7 +313,7 @@ void* startThreadHandler(void *resources)
 	
 	struct ThreadArray* aThread = thResources->globals->threads;
 	while (aThread) {
-		if (aThread->threadNumber != thResources->local->threadNumber){
+		if (aThread->threadNumber == thResources->local->threadNumber){
 			pthread_join(aThread->aPThread, NULL);
 		}
 		aThread = aThread->nextThread;

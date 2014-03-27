@@ -333,7 +333,7 @@ int startFirstThread(char* outputprefix)
 		fprintf(stderr, "Could not initialise ThreadArray.\n");
 		goto failThreads;
 	}
-	threads->threadNumber = firstThreadLocal->threadNumber;
+	threads->threadNumber = 0;
 	threads->nextThread = NULL;
 	globalThreadList->threads = threads;
 	pthread_create(&dataThread, NULL, writeDataThread, (void*)firstThreadResources);
