@@ -13,7 +13,7 @@
 
 #define BARRIER 10
 #define SUPER 100000
-#define THREADLINE 8
+#define THREADLINE 5
 
 struct ThreadRecord *startTR = NULL;
 static char outputprefix[BUFFSZ];
@@ -67,9 +67,9 @@ void* writeDataThread(void* tRes)
 	move(2,0);
 	printw("For licence details see http://github.com/mcmenaminadrian");
 	//check and update system limits
-	getrlimit(RLIMIT_AS, &limit);
-	move(3,0);
-	printw("Current limit: %llu, max limit: %llu\n", limit.rlim_cur, limit.rlim_max);
+	//getrlimit(RLIMIT_AS, &limit);
+	//move(3,0);
+	//printw("Current limit: %llu, max limit: %llu\n", limit.rlim_cur, limit.rlim_max);
 	refresh();
 	do {
 		pthread_mutex_lock(
