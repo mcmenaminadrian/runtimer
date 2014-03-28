@@ -31,11 +31,11 @@ void readOPTTree(void *tree, char *path)
 	while (inFile && inFile.eof() == false) {
 		inFile.read(buffIn, longLength);
 		pageNumberRead = *((unsigned long*)buffIn);
-		set<unsigned long> pageSet;
+		//set<unsigned long> pageSet;
 		optTree->insert(pair<long, set<unsigned long> >
-			(pageNumberRead, pageSet));
+			(pageNumberRead, set<unsigned long>));
 		map<long, set<unsigned long> >::iterator it;
-		it = optTree->find(pageNumber);
+		it = optTree->find(pageNumberRead);
 		do {
 			inFile.read(buffIn, longLength);
 			nextInstructionRead = *((unsigned long*)buffIn);
