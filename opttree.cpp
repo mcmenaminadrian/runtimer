@@ -33,7 +33,7 @@ void readOPTTree(void *tree, char *path)
 		pageNumberRead = *((unsigned long*)buffIn);
 		//set<unsigned long> pageSet;
 		optTree->insert(pair<long, set<unsigned long> >
-			(pageNumberRead, set<unsigned long>));
+			(pageNumberRead, set<unsigned long>()));
 		map<long, set<unsigned long> >::iterator it;
 		it = optTree->find(pageNumberRead);
 		do {
