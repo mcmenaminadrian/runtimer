@@ -1,3 +1,4 @@
+#define __REENTRANT
 #include <iostream>
 #include <ctime>
 #include <vector>
@@ -5,7 +6,8 @@
 #include <cstdlib>
 #include <cstdio>
 #include <set>
-#include "pthread.h"
+#include <pthread.h>
+#include <sched.h>
 #include "threadhandler.h"
 
 using namespace std;

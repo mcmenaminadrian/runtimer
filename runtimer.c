@@ -1,8 +1,10 @@
+#define __REENTRANT
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <expat.h>
 #include <pthread.h>
+#include <sched.h>
 #include <time.h>
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -32,7 +34,7 @@ static pthread_t dataThread;
 //self-contained thread code that writes out performance data
 void* writeDataThread(void* tRes)
 {
-	struct rlimit limit;
+	//struct rlimit limit;
 	struct ThreadResources* threadResources =
 		(struct ThreadResources*) tRes;
 	//lock down the globals until we have written files

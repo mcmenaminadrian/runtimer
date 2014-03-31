@@ -1,7 +1,9 @@
+#define __REENTRANT
 #include <stdio.h>
 #include <stdlib.h>
 #include <expat.h>
 #include <pthread.h>
+#include <sched.h>
 #include <time.h>
 #include <string.h>
 #include <limits.h>
