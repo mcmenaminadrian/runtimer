@@ -233,7 +233,6 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 		}
 		if (strcmp(name, "modify") == 0) {
 			//do it again
-			time_t now = time(NULL);
 			pthread_mutex_lock(&globals->threadGlobalLock);
 			if (locatePageTreePR(pageNumber, globals->globalTree)){
 				inGlobalTree(pageNumber, thResources);
