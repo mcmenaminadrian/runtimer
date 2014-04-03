@@ -184,11 +184,7 @@ static void inGlobalTree(long pageNumber, struct ThreadResources *thResources)
 	updateTickCount(thResources);
 }
 
-<<<<<<< HEAD
-static void
-=======
 static void 
->>>>>>> newopt
 notInGlobalTree(long pageNumber, struct ThreadResources *thResources)
 {
 	struct ThreadGlobal *globals = thResources->globals;
