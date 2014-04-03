@@ -1,6 +1,5 @@
 #define __REENTRANT
 #include <iostream>
-#include <ctime>
 #include <vector>
 #include <stdexcept>
 #include <cstdlib>
