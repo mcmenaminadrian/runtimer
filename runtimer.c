@@ -81,6 +81,8 @@ void* writeDataThread(void* tRes)
 		fprintf(fpFaults, "%li",
 			threadResources->globals->totalTicks);
 		while (records) {
+			fprintf(fpInstructions, ", ");
+			fprintf(fpFaults, ", ");
 			if (records->local) {
 				long instDiff =
 					records->local->instructionCount -
@@ -91,8 +93,8 @@ void* writeDataThread(void* tRes)
 					records->local->prevFaultCount;
 				records->local->prevFaultCount =
 					records->local->faultCount;
-				fprintf(fpInstructions, ", %li", instDiff);
-				fprintf(fpFaults, ", %li", faultDiff);
+				fprintf(fpInstructions, "%li", instDiff);
+				fprintf(fpFaults, "%li", faultDiff);
 			}
 			records = records->next;
 		}
@@ -105,24 +107,26 @@ void* writeDataThread(void* tRes)
 		records = threadResources->records;
 		fflush(fpInstructions);
 		fflush(fpFaults);
-		move(THREADLINE,0);
-		printw("Ticks: %li\n", threadResources->globals->totalTicks);
 		move(THREADLINE + 1,0);
 		printw("FAULTS\n");
 		move(THREADLINE + 3,0);
 		printw("INSTRUCTIONS\n");
 		move(THREADLINE + 2,0);
+		printw("%li ", threadResources->globals->totalTicks);
 		while (records) {
+			printw(", ");
 			if (records->local) {
-				printw(" %li ", records->local->faultCount);
+				printw("%li", records->local->faultCount);
 			}
 			records = records->next;
 		}
 		records = threadResources->records;
 		move(THREADLINE + 4, 0);
+		printw("%li ", threadResources->globals->totalTicks);
 		while (records) {
+			printw(", ");
 			if (records->local) {
-				printw(" %li ",
+				printw("%li",
 					records->local->instructionCount);
 			}
 			records = records->next;
