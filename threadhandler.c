@@ -236,9 +236,9 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 			time_t now = time(NULL);
 			pthread_mutex_lock(&globals->threadGlobalLock);
 			if (locatePageTreePR(pageNumber, globals->globalTree)){
-				inGlobalTree(pageNumber, thResources, &now);
+				inGlobalTree(pageNumber, thResources);
 			} else {
-				notInGlobalTree(pageNumber, thResources, &now);
+				notInGlobalTree(pageNumber, thResources);
 			}
 		}
 		local->instructionCount++;
