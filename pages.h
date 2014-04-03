@@ -11,6 +11,5 @@ void insertIntoPageTree(long pageNumber, void* tree);
 void* locatePageTreePR(long pageNumber, void* tree);
 void removeFromPageTree(long pageNumber, void* tree);
 int countPageTree(void* tree);
-struct PageChain* getPageChain(void* tree);
-void showInOrder(void* tree);
+void fillInstructionTree(void* gTree, void* iTree, void* oTree, long inst);
 #endif

@@ -1,3 +1,4 @@
+#define __REENTRANT
 #include <stdio.h>
 #include <stdlib.h>
 #include <expat.h>
@@ -13,7 +14,8 @@
 static int threadline = 10;
 
 //launch a thread
-static void spawnThread(int threadNo, struct ThreadGlobal* globals)
+static void
+spawnThread(int parentThread, int threadNo, struct ThreadGlobal* globals)
 {
 	move(++threadline, 0);
 	printw("Spawning thread %i. at tick %li\n", threadNo,
@@ -93,7 +95,7 @@ static void spawnThread(int threadNo, struct ThreadGlobal* globals)
 			threadNo);
 		goto failTA;
 	}
-	anotherThread->threadNumber = threadNo;
+	anotherThread->threadNumber = parentThread;
 	anotherThread->nextThread = NULL;
 
 	pthread_mutex_lock(&globals->threadGlobalLock);
@@ -134,9 +136,6 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		thResources->local->faultCount); */
 
 	struct ThreadRecord* records = thResources->records;
-	struct PageChain *headChain =
-			getPageChain(thResources->globals->globalTree);
-	struct PageChain* currentChain = NULL;
 	void* minTree = createMinTree();
 	while (records) {
 		struct ThreadLocal* locals = records->local;
@@ -144,25 +143,15 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 			break;
 		}
 		if (locals->dead == 1) {
+			records = records->next;
 			continue;
 		}
-		currentChain = headChain;
+		
 		void* instructionTree = createInstructionTree();
-		while (currentChain) {
-			long instructionNext =
-				nextInChain(currentChain->page,
-				locals->instructionCount,
-				locals->optTree);
-			if (instructionNext != -1) {
-				insertIntoTree(currentChain->page,
-					instructionNext, instructionTree);
-			} else {
-				insertIntoTree(currentChain->page,
-					LONG_MAX, instructionTree);
-			}
-			currentChain = currentChain->next;
-		}
-
+		fillInstructionTree(thResources->globals->globalTree,
+			instructionTree,
+			locals->optTree,
+			locals->instructionCount);
 		pushToMinTree(minTree, instructionTree);
 		records = records->next;
 		freeInstTree(instructionTree);
@@ -195,7 +184,11 @@ static void inGlobalTree(long pageNumber, struct ThreadResources *thResources)
 	updateTickCount(thResources);
 }
 
+<<<<<<< HEAD
 static void
+=======
+static void 
+>>>>>>> newopt
 notInGlobalTree(long pageNumber, struct ThreadResources *thResources)
 {
 	struct ThreadGlobal *globals = thResources->globals;
@@ -203,7 +196,7 @@ notInGlobalTree(long pageNumber, struct ThreadResources *thResources)
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	if (faultPage(pageNumber, thResources) > 0) {
 		pthread_mutex_lock(&globals->threadGlobalLock);
-		if (countPageTree(globals->globalTree) >=
+		if (countPageTree(globals->globalTree) >
 			CORES * COREMEM / PAGESIZE ) {
 			removePage(pageNumber, thResources);
 		}	
@@ -256,8 +249,8 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 			for (i = 0; attr[i]; i += 2) {
 				if (strcmp(attr[i], "thread") == 0) {
 					int threadNo = atoi(attr[i+1]);
-					spawnThread(threadNo,
-						thResources->globals);
+					spawnThread(local->threadNumber,
+						threadNo, globals);
 				}
 			}
 		}
@@ -321,16 +314,20 @@ void* startThreadHandler(void *resources)
 	
 	struct ThreadArray* aThread = thResources->globals->threads;
 	while (aThread) {
-		if (aThread->threadNumber != thResources->local->threadNumber){
+		if (aThread->threadNumber == thResources->local->threadNumber){
 			pthread_join(aThread->aPThread, NULL);
 		}
 		aThread = aThread->nextThread;
 	}
 
 cleanup:
+	
 	removeOPTTree(thResources->local->optTree);
-	removePageTree(thResources->globals->globalTree);
-	free(thResources->globals);
+	if (thResources->local->threadNumber == 1) {
+		getch();
+		removePageTree(thResources->globals->globalTree);
+		free(thResources->globals);
+	}
 	free(thResources);
 	
 	return NULL;

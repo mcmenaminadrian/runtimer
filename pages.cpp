@@ -1,3 +1,4 @@
+#define __REENTRANT
 #include <iostream>
 #include <ctime>
 #include <vector>
@@ -5,33 +6,17 @@
 #include <cstdlib>
 #include <cstdio>
 #include <set>
-#include "pthread.h"
+#include <pthread.h>
+#include <sched.h>
 #include "threadhandler.h"
 
 using namespace std;
 
 
-void 
-buildPageChain(struct PageChain** headChain,
-	struct PageChain** activeChain, set<long>* tree)
-{
-	for (set<long>::iterator it = tree->begin(); it != tree->end(); ++it)
-	{
-		struct PageChain *nextChain =
-			(struct PageChain*) malloc(sizeof(struct PageChain));
-		nextChain->next = NULL;
-		nextChain->page = *it;
-		if (*activeChain == NULL) { //first in chain
-			*activeChain = nextChain;
-			*headChain = *activeChain;
-		} else {
-			(*activeChain)->next = nextChain;
-			*activeChain = nextChain;
-		}
-	}
-}
-
 extern "C" {
+
+long findNextInstruction(unsigned long cI, long pN, void* tree);
+void insertIntoTree(long, long, void*);
 
 void* createPageTree(void)
 {
@@ -78,24 +63,18 @@ int countPageTree(void* tree)
 	return prTree->size();
 }
 
-struct PageChain* getPageChain(void *tree)
+void
+fillInstructionTree(void* global, void* iTree, void* oTree, long instruction)
 {
-	set<long> *prTree;
-	struct PageChain* activeChain = NULL;
-	struct PageChain* headChain = NULL;
-	prTree = static_cast<set<long> *>(tree);
-	buildPageChain(&headChain, &activeChain, prTree);
-	return headChain;
-}
-
-void cleanPageChain(struct PageChain* inChain)
-{
-	if (inChain == NULL){
-		return;
+	set<long>* prTree;
+	prTree = static_cast<set<long> *>(global);
+	set<long>::iterator it;
+	for (it = prTree->begin(); it != prTree->end(); it++) {
+		long pageNumber = *it;
+		long nextInstruction = findNextInstruction(instruction,
+			pageNumber, oTree);
+		insertIntoTree(pageNumber, nextInstruction, iTree);
 	}
-	struct PageChain* nextChain = inChain->next;
-	delete inChain;
-	cleanPageChain(nextChain);
 }
 
 }// end extern "C"		

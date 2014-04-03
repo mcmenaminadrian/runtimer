@@ -1,10 +1,13 @@
+#define __REENTRANT
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <expat.h>
 #include <pthread.h>
+#include <sched.h>
 #include <time.h>
 #include <sys/time.h>
+#include <sys/resource.h>
 #include <curses.h>
 #include "pages.h"
 #include "threadhandler.h"
@@ -12,6 +15,7 @@
 
 #define BARRIER 10
 #define SUPER 100000
+#define THREADLINE 5
 
 struct ThreadRecord *startTR = NULL;
 static char outputprefix[BUFFSZ];
@@ -26,9 +30,11 @@ static int coresInUse = 0;
 static int writeCountDown = SUPER;
 static pthread_t dataThread;
 
+
 //self-contained thread code that writes out performance data
 void* writeDataThread(void* tRes)
 {
+	//struct rlimit limit;
 	struct ThreadResources* threadResources =
 		(struct ThreadResources*) tRes;
 	//lock down the globals until we have written files
@@ -62,6 +68,10 @@ void* writeDataThread(void* tRes)
 	printw("Copyright, (c) Adrian McMenamin, 2014");
 	move(2,0);
 	printw("For licence details see http://github.com/mcmenaminadrian");
+	//check and update system limits
+	//getrlimit(RLIMIT_AS, &limit);
+	//move(3,0);
+	//printw("Current limit: %llu, max limit: %llu\n", limit.rlim_cur, limit.rlim_max);
 	refresh();
 	do {
 		pthread_mutex_lock(
@@ -95,13 +105,13 @@ void* writeDataThread(void* tRes)
 		records = threadResources->records;
 		fflush(fpInstructions);
 		fflush(fpFaults);
-		move(5,0);
+		move(THREADLINE,0);
 		printw("Ticks: %li\n", threadResources->globals->totalTicks);
-		move(6,0);
+		move(THREADLINE + 1,0);
 		printw("FAULTS\n");
-		move(8,0);
+		move(THREADLINE + 3,0);
 		printw("INSTRUCTIONS\n");
-		move(7,0);
+		move(THREADLINE + 2,0);
 		while (records) {
 			if (records->local) {
 				printw(" %li ", records->local->faultCount);
@@ -109,7 +119,7 @@ void* writeDataThread(void* tRes)
 			records = records->next;
 		}
 		records = threadResources->records;
-		move(9, 0);
+		move(THREADLINE + 4, 0);
 		while (records) {
 			if (records->local) {
 				printw(" %li ",
@@ -333,6 +343,7 @@ int startFirstThread(char* outputprefix)
 		fprintf(stderr, "Could not initialise ThreadArray.\n");
 		goto failThreads;
 	}
+	threads->threadNumber = 0;
 	threads->nextThread = NULL;
 	globalThreadList->threads = threads;
 	pthread_create(&dataThread, NULL, writeDataThread, (void*)firstThreadResources);
