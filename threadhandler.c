@@ -4,7 +4,6 @@
 #include <expat.h>
 #include <pthread.h>
 #include <sched.h>
-#include <time.h>
 #include <string.h>
 #include <limits.h>
 #include <curses.h>
@@ -179,16 +178,15 @@ static int faultPage(long pageNumber, struct ThreadResources *thResources)
 	return 1;
 }
 
-static void inGlobalTree(long pageNumber, struct ThreadResources *thResources,
-	time_t *now)
+static void inGlobalTree(long pageNumber, struct ThreadResources *thResources)
 {
 	struct ThreadGlobal *globals = thResources->globals;
 	pthread_mutex_unlock(&globals->threadGlobalLock);
 	updateTickCount(thResources);
 }
 
-static void notInGlobalTree(long pageNumber,
-	struct ThreadResources *thResources, time_t *now)
+static void 
+notInGlobalTree(long pageNumber, struct ThreadResources *thResources)
 {
 	struct ThreadGlobal *globals = thResources->globals;
 	decrementCoresInUse();
@@ -220,18 +218,16 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 		strcmp(name, "modify") == 0 || strcmp(name, "store") == 0) {
 		for (i = 0; attr[i]; i += 2) {
 			if (strcmp(attr[i], "address") == 0) {
-				time_t now = time(NULL);
 				address = strtol(attr[i+1], NULL, 16);
 				pageNumber = address >> BITSHIFT;
 				//have address - is it already present?
 				pthread_mutex_lock(&globals->threadGlobalLock);
 				if (locatePageTreePR(pageNumber,
 						globals->globalTree) > 0) {
-					inGlobalTree(pageNumber, thResources,
-						&now);
+					inGlobalTree(pageNumber, thResources);
 				} else {
 					notInGlobalTree(pageNumber,
-						thResources, &now);
+						thResources);
 				}
 			}
 		}
