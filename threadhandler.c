@@ -135,7 +135,7 @@ static void removePage(long pageNumber, struct ThreadResources *thResources)
 		thResources->local->tickCount,
 		thResources->local->faultCount); */
 
-	struct ThreadRecord* records = thResources->records;
+	struct ThreadRecord* records = thResources->globals->head;
 	void* minTree = createMinTree();
 	while (records) {
 		struct ThreadLocal* locals = records->local;
