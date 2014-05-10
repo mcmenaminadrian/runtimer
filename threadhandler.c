@@ -202,31 +202,48 @@ notInGlobalTree(long pageNumber, struct ThreadResources *thResources)
 static void XMLCALL
 threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 { 
-	int i;
-	long address, pageNumber;
+	int i, overrun;
+	long address, pageNumber, size;
 	struct ThreadResources *thResources;
 	struct ThreadGlobal *globals;
 	struct ThreadLocal *local;
 	thResources = (struct ThreadResources *)data;
 	globals = thResources->globals;
 	local = thResources->local;
+	overrun = 0;
 	if (strcmp(name, "instruction") == 0 || strcmp(name, "load") == 0 ||
 		strcmp(name, "modify") == 0 || strcmp(name, "store") == 0) {
 		for (i = 0; attr[i]; i += 2) {
 			if (strcmp(attr[i], "address") == 0) {
 				address = strtol(attr[i+1], NULL, 16);
 				pageNumber = address >> BITSHIFT;
-				//have address - is it already present?
-				pthread_mutex_lock(&globals->threadGlobalLock);
-				if (locatePageTreePR(pageNumber,
-						globals->globalTree) > 0) {
-					inGlobalTree(pageNumber, thResources);
-				} else {
-					notInGlobalTree(pageNumber,
-						thResources);
+				continue;
+			}
+			if (strcmp(attr[i], "size") == 0) {
+				size = strtol(attr[i+1], NULL, 16);
+				if ((address + size) >> BITSHIFT != pageNumber)
+				{
+					overrun = 1;
 				}
 			}
 		}
+		//have address - is it already present?
+		pthread_mutex_lock(&globals->threadGlobalLock);
+		if (locatePageTreePR(pageNumber, globals->globalTree) > 0) {
+			inGlobalTree(pageNumber, thResources);
+		} else {
+			notInGlobalTree(pageNumber, thResources);
+		}
+		if (overrun) {
+			pthread_mutex_lock(&globals->threadGlobalLock);
+			if (locatePageTreePR(pageNumber + 1,
+				globals->globalTree)) {
+				inGlobalTree(pageNumber + 1, thResources);
+			} else {
+				notInGlobalTree(pageNumber + 1, thResources);
+			}
+		}
+
 		if (strcmp(name, "modify") == 0) {
 			//do it again
 			pthread_mutex_lock(&globals->threadGlobalLock);
@@ -234,6 +251,16 @@ threadXMLProcessor(void* data, const XML_Char *name, const XML_Char **attr)
 				inGlobalTree(pageNumber, thResources);
 			} else {
 				notInGlobalTree(pageNumber, thResources);
+			}
+			if (overrun) {
+				if (locatePageTreePR(pageNumber + 1,
+					globals->globalTree)) {
+					inGlobalTree(pageNumber + 1,
+						thResources);
+				} else {
+					notInGlobalTree(pageNumber + 1,
+						thResources);
+				}
 			}
 		}
 		local->instructionCount++;
